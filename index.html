@@ -1,0 +1,611 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Matemáticas LDK</title>
+
+<style>
+:root{
+    --pink:#ff6fb5;
+    --pink-soft:#ffe6f2;
+    --purple:#b388ff;
+    --green:#6fdc8c;
+    --green-soft:#eaffef;
+    --border:#e4d7e7;
+    --text:#333;
+}
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    padding:20px;
+    font-family:Arial, Helvetica, sans-serif;
+    background:#fffafc;
+    color:var(--text);
+    transition:all .5s ease;
+}
+
+body.completed{
+    background:var(--green-soft);
+}
+
+.container{
+    max-width:1000px;
+    margin:auto;
+}
+
+.title{
+    text-align:center;
+    margin-bottom:8px;
+}
+
+.title h1{
+    color:var(--pink);
+    margin:0;
+    font-size:clamp(32px,5vw,48px);
+}
+
+.subtitle{
+    text-align:center;
+    color:#777;
+    margin-bottom:25px;
+}
+
+.crown{
+    display:none;
+    font-size:48px;
+    margin-bottom:8px;
+}
+
+.completed .crown{
+    display:block;
+}
+
+.card{
+    background:white;
+    border:2px solid var(--border);
+    border-radius:20px;
+    padding:20px;
+    margin-bottom:20px;
+}
+
+textarea{
+    width:100%;
+    min-height:180px;
+    resize:vertical;
+    border-radius:14px;
+    border:2px solid #ddd;
+    padding:15px;
+    font-size:20px;
+}
+
+button{
+    margin-top:15px;
+    border:none;
+    border-radius:14px;
+    background:var(--pink);
+    color:white;
+    font-size:20px;
+    padding:14px 22px;
+    cursor:pointer;
+}
+
+button:hover{
+    opacity:.9;
+}
+
+.progress-wrapper{
+    margin-bottom:20px;
+}
+
+.progress-text{
+    font-size:20px;
+    margin-bottom:10px;
+}
+
+.progress-bar{
+    height:22px;
+    background:#eee;
+    border-radius:999px;
+    overflow:hidden;
+}
+
+.progress-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,var(--pink),var(--purple));
+    transition:width .4s ease;
+}
+
+.exercise{
+    border:2px solid #eee;
+    border-radius:16px;
+    padding:16px;
+    margin-bottom:14px;
+    transition:.3s;
+}
+
+.exercise.active{
+    border-color:var(--pink);
+    box-shadow:0 0 18px rgba(255,111,181,.35);
+    animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+    0%{transform:scale(1);}
+    50%{transform:scale(1.01);}
+    100%{transform:scale(1);}
+}
+
+.row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.expression{
+    font-size:30px;
+    font-weight:bold;
+}
+
+.answer{
+    width:120px;
+    height:52px;
+    font-size:26px;
+    text-align:center;
+    border-radius:12px;
+    border:2px solid #ccc;
+}
+
+.answer:focus{
+    outline:none;
+    border-color:var(--pink);
+}
+
+.message{
+    margin-top:10px;
+    font-size:22px;
+    min-height:28px;
+}
+
+.correct{
+    color:#1f9c47;
+}
+
+.incorrect{
+    color:#d97706;
+}
+
+.answer.locked{
+    background:#f0fff3;
+    border-color:#1f9c47;
+}
+
+.hidden{
+    display:none;
+}
+
+.celebration{
+    text-align:center;
+    margin-top:25px;
+    display:none;
+}
+
+.completed .celebration{
+    display:block;
+}
+
+.celebration h2{
+    font-size:42px;
+    color:#1f9c47;
+    margin:10px 0;
+}
+
+.celebration p{
+    font-size:26px;
+}
+
+.confetti{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    overflow:hidden;
+    display:none;
+}
+
+.completed .confetti{
+    display:block;
+}
+
+.confetti span{
+    position:absolute;
+    font-size:28px;
+    animation:fall linear forwards;
+}
+
+@keyframes fall{
+    from{
+        transform:translateY(-100px) rotate(0deg);
+    }
+    to{
+        transform:translateY(110vh) rotate(720deg);
+    }
+}
+
+.warning{
+    margin-top:10px;
+    color:#d97706;
+    font-weight:bold;
+}
+
+@media (max-width:768px){
+
+    body{
+        padding:12px;
+    }
+
+    .expression{
+        font-size:26px;
+    }
+
+    .answer{
+        width:100%;
+        max-width:220px;
+        height:60px;
+        font-size:30px;
+    }
+
+    .message{
+        font-size:20px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="confetti" id="confetti"></div>
+
+<div class="container">
+
+    <div class="title">
+        <div class="crown">👑</div>
+        <h1>💖 Matemáticas LDK ✨</h1>
+    </div>
+
+    <div class="subtitle">
+        Aprendamos jugando 🌟
+    </div>
+
+    <div class="card">
+
+        <h2>🪄 Escribe las operaciones</h2>
+
+<textarea id="operations">
+2+2
+5-2
+2*4
+3/3
+</textarea>
+
+        <button onclick="generateExercises()">
+            🪄 Generar ejercicios
+        </button>
+
+        <div id="warningArea"></div>
+
+    </div>
+
+    <div id="exerciseSection" class="hidden">
+
+        <div class="card">
+
+            <div class="progress-wrapper">
+
+                <div class="progress-text" id="progressText">
+                    🌈 Progreso: 0/0
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+
+            </div>
+
+            <div id="exerciseContainer"></div>
+
+            <div class="celebration">
+                <h2>🎉🎉🎉</h2>
+                <h2>🪄 ¡MAGIA! 🪄</h2>
+
+                <p>
+                    ¡Completaste todos los ejercicios!
+                </p>
+
+                <p>
+                    🌟 🌟 🌟 🌟 🌟
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+let totalExercises = 0;
+let completedExercises = 0;
+
+function generateExercises(){
+
+    document.body.classList.remove('completed');
+
+    const warningArea = document.getElementById('warningArea');
+    warningArea.innerHTML = '';
+
+    completedExercises = 0;
+
+    const lines = document
+        .getElementById('operations')
+        .value
+        .split('\n')
+        .map(x => x.trim())
+        .filter(x => x.length);
+
+    const container = document.getElementById('exerciseContainer');
+    container.innerHTML = '';
+
+    const validExercises = [];
+    const warnings = [];
+
+    lines.forEach(line=>{
+
+        const clean = line.replace(/\s+/g,'');
+
+        if(!/^\d+[\+\-\*\/]\d+$/.test(clean)){
+            warnings.push(`⚠️ No pude interpretar: ${line}`);
+            return;
+        }
+
+        const match = clean.match(/^(\d+)([\+\-\*\/])(\d+)$/);
+
+        const a = Number(match[1]);
+        const op = match[2];
+        const b = Number(match[3]);
+
+        if(op === '/' && a % b !== 0){
+            warnings.push(`⚠️ ${line} → Solo divisiones exactas`);
+            return;
+        }
+
+        let result;
+
+        switch(op){
+            case '+': result=a+b; break;
+            case '-': result=a-b; break;
+            case '*': result=a*b; break;
+            case '/': result=a/b; break;
+        }
+
+        validExercises.push({
+            text: clean,
+            display: `${a} ${symbol(op)} ${b}`,
+            result
+        });
+
+    });
+
+    if(warnings.length){
+        warningArea.innerHTML =
+            `<div class="warning">${warnings.join('<br>')}</div>`;
+    }
+
+    totalExercises = validExercises.length;
+
+    validExercises.forEach((exercise,index)=>{
+
+        const div = document.createElement('div');
+        div.className = 'exercise';
+
+        div.innerHTML = `
+            <div class="row">
+                <div class="expression">
+                    ${exercise.display} =
+                </div>
+
+                <input
+                    type="text"
+                    inputmode="numeric"
+                    class="answer"
+                    data-answer="${exercise.result}"
+                >
+            </div>
+
+            <div class="message"></div>
+        `;
+
+        container.appendChild(div);
+
+        const input = div.querySelector('.answer');
+        const message = div.querySelector('.message');
+
+        const validate = () => {
+
+            if(input.disabled) return;
+
+            const value = input.value.trim();
+
+            if(value === ''){
+                return;
+            }
+
+            if(!/^-?\d+$/.test(value)){
+                message.innerHTML =
+                    '🔢 Escribe un número';
+                message.className =
+                    'message incorrect';
+                return;
+            }
+
+            if(Number(value) === Number(input.dataset.answer)){
+
+                input.disabled = true;
+                input.classList.add('locked');
+
+                message.innerHTML =
+                    '✅ ¡Muy bien!';
+
+                message.className =
+                    'message correct';
+
+                completedExercises++;
+
+                updateProgress();
+                highlightNext();
+                checkFinished();
+
+            }else{
+
+                message.innerHTML =
+                    '🤔 Intenta otra vez';
+
+                message.className =
+                    'message incorrect';
+            }
+        };
+
+        input.addEventListener('keydown',(e)=>{
+            if(e.key==='Enter'){
+                validate();
+            }
+        });
+
+        input.addEventListener('blur',validate);
+
+    });
+
+    document
+        .getElementById('exerciseSection')
+        .classList.remove('hidden');
+
+    updateProgress();
+    highlightNext();
+
+    setTimeout(()=>{
+        const first = document.querySelector('.answer');
+        if(first){
+            first.focus();
+        }
+    },100);
+}
+
+function symbol(op){
+
+    if(op === '*') return '×';
+    if(op === '/') return '÷';
+
+    return op;
+}
+
+function updateProgress(){
+
+    const text =
+        document.getElementById('progressText');
+
+    const fill =
+        document.getElementById('progressFill');
+
+    text.innerHTML =
+        `🌈 Progreso: ${completedExercises}/${totalExercises}`;
+
+    const percent =
+        totalExercises
+            ? (completedExercises/totalExercises)*100
+            : 0;
+
+    fill.style.width = percent + '%';
+}
+
+function highlightNext(){
+
+    document
+        .querySelectorAll('.exercise')
+        .forEach(e=>e.classList.remove('active'));
+
+    const next =
+        [...document.querySelectorAll('.answer')]
+        .find(x=>!x.disabled);
+
+    if(next){
+        next.closest('.exercise')
+            .classList.add('active');
+    }
+}
+
+function checkFinished(){
+
+    if(
+        totalExercises > 0 &&
+        completedExercises === totalExercises
+    ){
+
+        document.body.classList.add('completed');
+
+        createConfetti();
+
+        window.scrollTo({
+            top:document.body.scrollHeight,
+            behavior:'smooth'
+        });
+    }
+}
+
+function createConfetti(){
+
+    const container =
+        document.getElementById('confetti');
+
+    container.innerHTML = '';
+
+    const emojis =
+        ['🎉','✨','🌟','💖','🎊'];
+
+    for(let i=0;i<70;i++){
+
+        const el =
+            document.createElement('span');
+
+        el.innerHTML =
+            emojis[Math.floor(
+                Math.random()*emojis.length
+            )];
+
+        el.style.left =
+            Math.random()*100 + 'vw';
+
+        el.style.animationDuration =
+            (3 + Math.random()*4) + 's';
+
+        el.style.animationDelay =
+            Math.random()*2 + 's';
+
+        container.appendChild(el);
+    }
+}
+
+generateExercises();
+
+</script>
+
+</body>
+</html>
+```
