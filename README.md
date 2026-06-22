@@ -6,6 +6,8 @@ Originally created to help a first-grade child practice basic arithmetic in a fu
 
 No installation required. No frameworks. No dependencies. Just open the HTML file in a browser and start practicing.
 
+Perfect for practicing arithmetic on desktop and tablets.
+
 ---
 
 ## Features
@@ -102,6 +104,20 @@ http://localhost:8000
 
 ---
 
+## Releases
+
+The project is versioned using Git tags and GitHub Releases.
+
+### Available Releases
+
+- v1.0.0 — Initial release
+- v2.0.0 — UX improvements and keyboard navigation
+- v3.0.0 — Multilingual support (English and Spanish)
+
+See the Releases section for detailed changelogs.
+
+---
+
 ## Future Ideas
 
 * Difficulty levels
@@ -112,6 +128,12 @@ http://localhost:8000
 * Achievement badges
 * Teacher/parent statistics
 * Printable worksheets
+
+---
+
+## Live Demo
+
+https://cvera08.github.io/magic-math-kids/
 
 ---
 
