@@ -1,11 +1,10 @@
-```html
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Matemáticas LDK</title>
+<title>Math LDK</title>
 
 <style>
 :root{
@@ -277,16 +276,16 @@ button:hover{
 
     <div class="title">
         <div class="crown">👑</div>
-        <h1>💖 Matemáticas LDK ✨</h1>
+        <h1>💖 Math LDK ✨</h1>
     </div>
 
     <div class="subtitle">
-        Aprendamos jugando 🌟
+        Learning through play 🌟
     </div>
 
     <div class="card">
 
-        <h2>🪄 Escribe las operaciones</h2>
+        <h2>🪄 Write the operations</h2>
 
 <textarea id="operations">
 2+2
@@ -296,7 +295,7 @@ button:hover{
 </textarea>
 
         <button onclick="generateExercises()">
-            🪄 Generar ejercicios
+            🪄 Generate exercises
         </button>
 
         <div id="warningArea"></div>
@@ -310,7 +309,7 @@ button:hover{
             <div class="progress-wrapper">
 
                 <div class="progress-text" id="progressText">
-                    🌈 Progreso: 0/0
+                    🌈 Progress: 0/0
                 </div>
 
                 <div class="progress-bar">
@@ -323,10 +322,10 @@ button:hover{
 
             <div class="celebration">
                 <h2>🎉🎉🎉</h2>
-                <h2>🪄 ¡MAGIA! 🪄</h2>
+                <h2>🪄 MAGIC! 🪄</h2>
 
                 <p>
-                    ¡Completaste todos los ejercicios!
+                    You completed all the exercises!
                 </p>
 
                 <p>
@@ -372,7 +371,7 @@ function generateExercises(){
         const clean = line.replace(/\s+/g,'');
 
         if(!/^\d+[\+\-\*\/]\d+$/.test(clean)){
-            warnings.push(`⚠️ No pude interpretar: ${line}`);
+            warnings.push(`⚠️ I could not understand: ${line}`);
             return;
         }
 
@@ -383,7 +382,7 @@ function generateExercises(){
         const b = Number(match[3]);
 
         if(op === '/' && a % b !== 0){
-            warnings.push(`⚠️ ${line} → Solo divisiones exactas`);
+            warnings.push(`⚠️ ${line} → Exact divisions only`);
             return;
         }
 
@@ -450,7 +449,7 @@ function generateExercises(){
 
             if(!/^-?\d+$/.test(value)){
                 message.innerHTML =
-                    '🔢 Escribe un número';
+                    '🔢 Enter a number';
                 message.className =
                     'message incorrect';
                 return;
@@ -462,7 +461,7 @@ function generateExercises(){
                 input.classList.add('locked');
 
                 message.innerHTML =
-                    '✅ ¡Muy bien!';
+                    '✅ Great job!';
 
                 message.className =
                     'message correct';
@@ -476,7 +475,7 @@ function generateExercises(){
             }else{
 
                 message.innerHTML =
-                    '🤔 Intenta otra vez';
+                    '🤔 Try again';
 
                 message.className =
                     'message incorrect';
@@ -525,7 +524,7 @@ function updateProgress(){
         document.getElementById('progressFill');
 
     text.innerHTML =
-        `🌈 Progreso: ${completedExercises}/${totalExercises}`;
+        `🌈 Progress: ${completedExercises}/${totalExercises}`;
 
     const percent =
         totalExercises
@@ -548,6 +547,13 @@ function highlightNext(){
     if(next){
         next.closest('.exercise')
             .classList.add('active');
+
+        next.focus();
+
+        next.scrollIntoView({
+            behavior:'smooth',
+            block:'center'
+        });
     }
 }
 
@@ -608,4 +614,3 @@ generateExercises();
 
 </body>
 </html>
-```
