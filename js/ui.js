@@ -22,6 +22,7 @@ const UI = (() => {
         typed: '',
         locked: false,
         firstTry: 0,
+        count: CONTENT.DEFAULT_COUNT,
     };
 
     const $ = (id) => document.getElementById(id);
@@ -49,9 +50,34 @@ const UI = (() => {
         });
     }
 
+    /* ---------------- home: levels ---------------- */
+
+    function name(obj){
+        return obj[I18N.getLang()] || obj.es;
+    }
+
+    function levelCard(level, extraClass){
+        return `<button class="card ${extraClass || ''}" data-level="${level.id}">
+            <span class="card-icon">${level.icon}</span>
+            <span class="card-title">${name(level.name)}</span>
+            <span class="card-sub">${name(level.sub)}</span>
+        </button>`;
+    }
+
+    function paintHome(){
+        els.levelGrid.innerHTML =
+            levelCard(CONTENT.MIX, 'card-featured') +
+            `<div class="level-grid">${CONTENT.LEVELS.map(l => levelCard(l)).join('')}</div>`;
+
+        els.countOptions.innerHTML = CONTENT.COUNTS.map(n =>
+            `<button data-count="${n}" class="${n === state.count ? 'selected' : ''}">${n}</button>`
+        ).join('');
+    }
+
     /* everything drawn by hand has to be redrawn after a language switch */
     function repaintCopy(){
         paintStatic();
+        paintHome();
         paintWarnings();
         if(!$('screen-quiz').classList.contains('hidden') && current()){
             paintProgress();
@@ -96,7 +122,7 @@ const UI = (() => {
 
     function buildQuestions(source){
         if(source.kind === 'homework') return ENGINE.homeworkSession(source.exercises);
-        return [];
+        return ENGINE.buildSession({ level: CONTENT.levelById(source.levelId), count: state.count });
     }
 
     function start(source){
@@ -246,6 +272,8 @@ const UI = (() => {
     function init(){
         els.btnBack = $('btnBack');
         els.langToggle = $('langToggle');
+        els.levelGrid = $('levelGrid');
+        els.countOptions = $('countOptions');
         els.homeworkText = $('homeworkText');
         els.homeworkWarnings = $('homeworkWarnings');
         els.progressText = $('quizProgressText');
@@ -271,6 +299,22 @@ const UI = (() => {
 
         $('btnHomework').addEventListener('click', startHomework);
 
+        state.count = STORAGE.getSetting('count', CONTENT.DEFAULT_COUNT);
+        if(!CONTENT.COUNTS.includes(state.count)) state.count = CONTENT.DEFAULT_COUNT;
+
+        els.levelGrid.addEventListener('click', (e) => {
+            const card = e.target.closest('[data-level]');
+            if(card) start({ kind: 'level', levelId: card.dataset.level });
+        });
+
+        els.countOptions.addEventListener('click', (e) => {
+            const b = e.target.closest('[data-count]');
+            if(!b) return;
+            state.count = Number(b.dataset.count);
+            STORAGE.setSetting('count', state.count);
+            paintHome();
+        });
+
         els.keypad.addEventListener('click', (e) => {
             const b = e.target.closest('button');
             if(b) press(b.dataset.key);
@@ -289,6 +333,7 @@ const UI = (() => {
         $('btnRetry').addEventListener('click', () => start(state.source));
 
         paintStatic();
+        paintHome();
         show('home');
     }
 

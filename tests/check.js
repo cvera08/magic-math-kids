@@ -6,12 +6,12 @@ const vm = require('vm');
 const path = require('path');
 
 const root = process.argv[2] || path.join(__dirname, '..');
-const files = ['js/engine.js'];
+const files = ['js/content.js', 'js/engine.js'];
 const code = files.map(f => fs.readFileSync(path.join(root, f), 'utf8')).join('\n;\n')
-    + '\n;globalThis.__x = { ENGINE };';
+    + '\n;globalThis.__x = { CONTENT, ENGINE };';
 const ctx = vm.createContext({ console });
 vm.runInContext(code, ctx);
-const { ENGINE } = ctx.__x;
+const { CONTENT, ENGINE } = ctx.__x;
 
 let problems = 0;
 const fail = (m) => { problems++; console.log('  ✗', m); };
@@ -34,5 +34,36 @@ eq(ENGINE.parseOperations('2-5').warnings.map(w => w.key), ['negativeResult'], '
 eq(ENGINE.homeworkSession(parsed.exercises).map(q => q.answer), [4,3,8,1,28,12,4], 'homework keeps the order');
 
 console.log('parser ok');
+
+/* ---------- every generated fact stays inside its level's limits ---------- */
+
+const LIMITS = {
+    sum10: f => f.op === '+' && f.a >= 1 && f.b >= 1 && f.result <= 10,
+    sub10: f => f.op === '-' && f.a <= 10 && f.b >= 1 && f.result >= 1,
+    sum20: f => f.op === '+' && f.result >= 11 && f.result <= 20 && f.a <= 10 && f.b <= 10,
+    sub20: f => f.op === '-' && f.a >= 11 && f.a <= 20 && f.result >= 1,
+    tens:  f => (f.a % 10 === 0 && f.b % 10 === 0 || f.b === 10) && f.result >= 0 && f.result <= 100,
+    big:   f => f.a >= 10 && f.b >= 10 && f.result <= 99 && f.result >= 0 &&
+                (f.op === '+' ? (f.a % 10 + f.b % 10 <= 9) : (f.a % 10 >= f.b % 10)),
+    mul:   f => f.op === '*' && f.a >= 2 && f.b >= 2 && f.a <= 5 && f.b <= 5 && f.result <= 20,
+    div:   f => f.op === '/' && f.a <= 8 && f.b >= 2 && f.b <= 4 && f.a % f.b === 0,
+};
+
+const levels = [...CONTENT.LEVELS, CONTENT.MIX];
+for(const level of levels){
+    for(let i = 0; i < 300; i++){
+        const session = ENGINE.buildSession({ level, count: 15 });
+        if(session.length !== 15) fail(`${level.id}: ${session.length} questions`);
+        for(const q of session){
+            const f = q.fact;
+            if(f.result !== ENGINE.solve(f.a, f.op, f.b)) fail(`${level.id}: wrong result ${f.key}`);
+            if(!Number.isInteger(f.result) || f.result < 0) fail(`${level.id}: bad result ${f.key}=${f.result}`);
+            const gen = level.mix ? f.gen : level.gen;
+            if(!LIMITS[gen](f)) fail(`${level.id}/${gen}: out of limits ${f.key}`);
+            if(q.answer === undefined) fail(`${level.id}: question without an answer`);
+        }
+    }
+    console.log(`${level.id}: ok`);
+}
 console.log(problems ? `\n${problems} PROBLEM(S)` : '\nall good');
 process.exit(problems ? 1 : 0);

@@ -13,6 +13,9 @@ const I18N = (() => {
             tagline: 'Aprendamos jugando 🌟',
             menu: '← Menú',
 
+            howMany: '¿Cuántas cuentas?',
+            orHomework: 'o una tarea que escribís vos',
+
             homeworkTitle: '📝 Tarea',
             homeworkHint: 'Escribí una cuenta por renglón: 15+13, 20-7, 4x5, 8/2',
             homeworkGo: '🪄 Armar ejercicios',
@@ -39,6 +42,9 @@ const I18N = (() => {
             brand: '💖 Math LDK',
             tagline: 'Learning through play 🌟',
             menu: '← Menu',
+
+            howMany: 'How many sums?',
+            orHomework: 'or homework you write',
 
             homeworkTitle: '📝 Homework',
             homeworkHint: 'One sum per line: 15+13, 20-7, 4x5, 8/2',
