@@ -1,281 +1,296 @@
 /*
- * UI — the exercise list, progress bar and celebration.
+ * UI — screens, the question card and the on-screen number pad.
+ *
+ * One question at a time, answered by tapping: on a small phone the
+ * system keyboard covered half the page and "check on blur" confused
+ * a six-year-old. The pad is always in the same place, under the card.
  */
 
-let totalExercises = 0;
-let completedExercises = 0;
-let currentWarnings = [];
+const UI = (() => {
 
-function setLanguage(language){
+    const MAX_DIGITS = 3;
+    const MAX_TRIES = 3;          // after the third miss we show the answer
+    const NEXT_DELAY = 900;       // pause on a right answer before moving on
+    const REVEAL_DELAY = 2200;    // longer, so she can read the answer
 
-    currentLanguage = language;
-    document.documentElement.lang = language;
-    document.title = t('pageTitle');
+    const els = {};
+    const state = {
+        source: null,      // what to rebuild on "play again"
+        questions: [],
+        index: 0,
+        tries: 0,
+        typed: '',
+        locked: false,
+        firstTry: 0,
+    };
 
-    document
-        .querySelectorAll('[data-i18n]')
-        .forEach(element=>{
-            element.innerHTML =
-                t(element.dataset.i18n);
-        });
+    const $ = (id) => document.getElementById(id);
 
-    document
-        .querySelectorAll('.message[data-message-key]')
-        .forEach(element=>{
-            element.innerHTML =
-                t(element.dataset.messageKey);
-        });
+    /* ---------------- screens ---------------- */
 
-    renderWarnings();
-    updateProgress();
-}
-
-function renderWarnings(){
-
-    const warningArea = document.getElementById('warningArea');
-
-    if(!currentWarnings.length){
-        warningArea.innerHTML = '';
-        return;
+    function show(name){
+        ['home', 'quiz', 'end'].forEach(s => $('screen-' + s).classList.toggle('hidden', s !== name));
+        els.btnBack.classList.toggle('hidden', name === 'home');
+        window.scrollTo(0, 0);
     }
 
-    const messages =
-        currentWarnings.map(warning=>{
-            if(warning.key === 'invalidOperation'){
-                return `${t('invalidOperation')}: ${warning.line}`;
-            }
+    /* ---------------- copy ---------------- */
 
-            return `⚠️ ${warning.line} → ${t('exactDivisions')}`;
+    function paintStatic(){
+        document.documentElement.lang = I18N.getLang();
+        document.title = I18N.t('pageTitle');
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            el.textContent = I18N.t(el.dataset.i18n);
         });
-
-    warningArea.innerHTML =
-        `<div class="warning">${messages.join('<br>')}</div>`;
-}
-
-function generateExercises(){
-
-    document.body.classList.remove('completed');
-
-    const warningArea = document.getElementById('warningArea');
-    warningArea.innerHTML = '';
-    currentWarnings = [];
-
-    completedExercises = 0;
-
-    const container = document.getElementById('exerciseContainer');
-    container.innerHTML = '';
-
-    const parsed = ENGINE.parseOperations(
-        document.getElementById('operations').value
-    );
-
-    const warnings = parsed.warnings;
-    const validExercises = parsed.exercises.map(e=>({
-        display: `${e.a} ${ENGINE.symbol(e.op)} ${e.b}`,
-        result: e.result
-    }));
-
-    if(warnings.length){
-        currentWarnings = warnings;
-        renderWarnings();
+        els.keyBack.setAttribute('aria-label', I18N.t('erase'));
+        els.keyOk.setAttribute('aria-label', I18N.t('ok'));
+        els.langToggle.querySelectorAll('button').forEach(b => {
+            b.classList.toggle('selected', b.dataset.lang === I18N.getLang());
+        });
     }
 
-    totalExercises = validExercises.length;
-
-    validExercises.forEach((exercise,index)=>{
-
-        const div = document.createElement('div');
-        div.className = 'exercise';
-
-        div.innerHTML = `
-            <div class="row">
-                <div class="expression">
-                    ${exercise.display} =
-                </div>
-
-                <input
-                    type="text"
-                    inputmode="numeric"
-                    class="answer"
-                    data-answer="${exercise.result}"
-                >
-            </div>
-
-            <div class="message"></div>
-        `;
-
-        container.appendChild(div);
-
-        const input = div.querySelector('.answer');
-        const message = div.querySelector('.message');
-
-        const validate = () => {
-
-            if(input.disabled) return;
-
-            const value = input.value.trim();
-
-            if(value === ''){
-                return;
-            }
-
-            if(!/^-?\d+$/.test(value)){
-                message.dataset.messageKey =
-                    'enterNumber';
-                message.innerHTML =
-                    t('enterNumber');
-                message.className =
-                    'message incorrect';
-                return;
-            }
-
-            if(Number(value) === Number(input.dataset.answer)){
-
-                input.disabled = true;
-                input.classList.add('locked');
-
-                message.innerHTML =
-                    t('correct');
-                message.dataset.messageKey =
-                    'correct';
-
-                message.className =
-                    'message correct';
-
-                completedExercises++;
-
-                updateProgress();
-                highlightNext();
-                checkFinished();
-
-            }else{
-
-                message.innerHTML =
-                    t('incorrect');
-                message.dataset.messageKey =
-                    'incorrect';
-
-                message.className =
-                    'message incorrect';
-            }
-        };
-
-        input.addEventListener('keydown',(e)=>{
-            if(e.key==='Enter'){
-                validate();
-            }
-        });
-
-        input.addEventListener('blur',validate);
-
-    });
-
-    document
-        .getElementById('exerciseSection')
-        .classList.remove('hidden');
-
-    updateProgress();
-    highlightNext();
-
-    setTimeout(()=>{
-        const first = document.querySelector('.answer');
-        if(first){
-            first.focus();
+    /* everything drawn by hand has to be redrawn after a language switch */
+    function repaintCopy(){
+        paintStatic();
+        paintWarnings();
+        if(!$('screen-quiz').classList.contains('hidden') && current()){
+            paintProgress();
+            paintInstruction(current());
         }
-    },100);
-}
+        if(!$('screen-end').classList.contains('hidden')) paintEnd();
+    }
 
-function updateProgress(){
+    function setLanguage(lang){
+        I18N.setLang(lang);
+        STORAGE.setSetting('lang', lang);
+        repaintCopy();
+    }
 
-    const text =
-        document.getElementById('progressText');
+    /* ---------------- homework (the grown-up's box) ---------------- */
 
-    const fill =
-        document.getElementById('progressFill');
+    let warnings = [];
 
-    text.innerHTML =
-        `${t('progress')}: ${completedExercises}/${totalExercises}`;
+    function paintWarnings(){
+        els.homeworkWarnings.innerHTML = warnings.map(w => {
+            const line = escapeHtml(w.line);
+            if(w.key === 'invalidOperation') return `<div>⚠️ ${I18N.t('invalidOperation')}: <b>${line}</b></div>`;
+            if(w.key === 'none') return `<div>${I18N.t('noExercises')}</div>`;
+            return `<div>⚠️ <b>${line}</b> → ${I18N.t(w.key)}</div>`;
+        }).join('');
+    }
 
-    const percent =
-        totalExercises
-            ? (completedExercises/totalExercises)*100
-            : 0;
+    function startHomework(){
+        const text = els.homeworkText.value;
+        STORAGE.setSetting('homework', text);
 
-    fill.style.width = percent + '%';
-}
+        const parsed = ENGINE.parseOperations(text);
+        warnings = parsed.warnings;
+        if(!parsed.exercises.length) warnings = [...warnings, { key: 'none', line: '' }];
+        paintWarnings();
+        if(!parsed.exercises.length) return;
 
-function highlightNext(){
+        start({ kind: 'homework', exercises: parsed.exercises });
+    }
 
-    document
-        .querySelectorAll('.exercise')
-        .forEach(e=>e.classList.remove('active'));
+    /* ---------------- a round ---------------- */
 
-    const next =
-        [...document.querySelectorAll('.answer')]
-        .find(x=>!x.disabled);
+    function buildQuestions(source){
+        if(source.kind === 'homework') return ENGINE.homeworkSession(source.exercises);
+        return [];
+    }
 
-    if(next){
-        next.closest('.exercise')
-            .classList.add('active');
+    function start(source){
+        state.source = source;
+        state.questions = buildQuestions(source);
+        state.index = 0;
+        state.firstTry = 0;
+        CONFETTI.clear(els.confetti);
+        show('quiz');
+        renderQuestion();
+    }
 
-        next.focus();
+    function current(){
+        return state.questions[state.index];
+    }
 
-        next.scrollIntoView({
-            behavior:'smooth',
-            block:'center'
+    function paintProgress(){
+        const total = state.questions.length;
+        els.progressText.textContent = I18N.t('progress', { n: state.index + 1, total });
+        els.progressFill.style.width = (state.index / total * 100) + '%';
+    }
+
+    function paintInstruction(){
+        els.instruction.textContent = I18N.t('typeAnswer');
+    }
+
+    function exprHtml(f, slot){
+        return `<div class="expr">
+            <span class="num">${f.a}</span>
+            <span class="op">${ENGINE.symbol(f.op)}</span>
+            <span class="num">${f.b}</span>
+            <span class="op">=</span>
+            ${slot}
+        </div>`;
+    }
+
+    function renderQuestion(){
+        const q = current();
+        state.tries = 0;
+        state.typed = '';
+        state.locked = false;
+
+        paintProgress();
+        paintInstruction(q);
+        els.feedback.textContent = '';
+        els.feedback.className = 'quiz-feedback';
+        els.options.innerHTML = '';
+
+        els.prompt.innerHTML = exprHtml(q.fact, '<span class="answer-box" id="answerBox"></span>');
+        els.keypad.classList.remove('hidden');
+        paintTyped();
+    }
+
+    function paintTyped(){
+        const box = $('answerBox');
+        if(!box) return;
+        box.textContent = state.typed || '?';
+        box.classList.toggle('empty', !state.typed);
+    }
+
+    /* ---------------- answering ---------------- */
+
+    function press(key){
+        if(state.locked || els.keypad.classList.contains('hidden')) return;
+
+        if(key === 'back'){
+            state.typed = state.typed.slice(0, -1);
+        }else if(key === 'ok'){
+            if(state.typed) submit(Number(state.typed));
+            return;
+        }else if(state.typed.length < MAX_DIGITS){
+            state.typed = (state.typed === '0' ? '' : state.typed) + key;
+        }
+        paintTyped();
+    }
+
+    function submit(value){
+        const q = current();
+        const box = $('answerBox');
+
+        if(value === q.answer){
+            state.locked = true;
+            if(state.tries === 0) state.firstTry++;
+            box.classList.add('right');
+            els.feedback.textContent = I18N.t('correct');
+            els.feedback.className = 'quiz-feedback feedback-good';
+            setTimeout(next, NEXT_DELAY);
+            return;
+        }
+
+        state.tries++;
+        box.classList.remove('wrong');
+        void box.offsetWidth; // restart the shake animation
+        box.classList.add('wrong');
+
+        if(state.tries >= MAX_TRIES){
+            state.locked = true;
+            state.typed = String(q.answer);
+            paintTyped();
+            box.classList.add('revealed');
+            els.feedback.textContent = I18N.t('revealed', { answer: q.answer });
+            els.feedback.className = 'quiz-feedback feedback-retry';
+            setTimeout(next, REVEAL_DELAY);
+            return;
+        }
+
+        state.typed = '';
+        paintTyped();
+        els.feedback.textContent = I18N.t('tryAgain');
+        els.feedback.className = 'quiz-feedback feedback-retry';
+    }
+
+    function next(){
+        state.index++;
+        if(state.index >= state.questions.length){
+            finish();
+            return;
+        }
+        renderQuestion();
+    }
+
+    /* ---------------- end ---------------- */
+
+    function paintEnd(){
+        els.endTitle.textContent = I18N.t('endTitle');
+        els.endScore.textContent = I18N.t('endScore', { total: state.questions.length });
+    }
+
+    function finish(){
+        els.progressFill.style.width = '100%';
+        els.keypad.classList.add('hidden');
+        paintEnd();
+        show('end');
+        CONFETTI.burst(els.confetti, 70);
+    }
+
+    /* ---------------- helpers ---------------- */
+
+    function escapeHtml(text){
+        return String(text).replace(/[&<>"']/g, c => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+        }[c]));
+    }
+
+    /* ---------------- wiring ---------------- */
+
+    function init(){
+        els.btnBack = $('btnBack');
+        els.langToggle = $('langToggle');
+        els.homeworkText = $('homeworkText');
+        els.homeworkWarnings = $('homeworkWarnings');
+        els.progressText = $('quizProgressText');
+        els.progressFill = $('quizProgressFill');
+        els.instruction = $('quizInstruction');
+        els.prompt = $('quizPrompt');
+        els.options = $('quizOptions');
+        els.feedback = $('quizFeedback');
+        els.keypad = $('keypad');
+        els.keyBack = $('keyBack');
+        els.keyOk = $('keyOk');
+        els.endTitle = $('endTitle');
+        els.endScore = $('endScore');
+        els.confetti = $('confetti');
+
+        I18N.setLang(I18N.guess(STORAGE.getSetting('lang'), navigator.language));
+        els.homeworkText.value = STORAGE.getSetting('homework', '15+13\n20-7\n4x5\n8/2');
+
+        els.langToggle.addEventListener('click', (e) => {
+            const b = e.target.closest('button');
+            if(b) setLanguage(b.dataset.lang);
         });
-    }
-}
 
-function checkFinished(){
+        $('btnHomework').addEventListener('click', startHomework);
 
-    if(
-        totalExercises > 0 &&
-        completedExercises === totalExercises
-    ){
-
-        document.body.classList.add('completed');
-
-        createConfetti();
-
-        window.scrollTo({
-            top:document.body.scrollHeight,
-            behavior:'smooth'
+        els.keypad.addEventListener('click', (e) => {
+            const b = e.target.closest('button');
+            if(b) press(b.dataset.key);
         });
+
+        // a real keyboard works too, for the laptop
+        document.addEventListener('keydown', (e) => {
+            if($('screen-quiz').classList.contains('hidden')) return;
+            if(/^[0-9]$/.test(e.key)) press(e.key);
+            else if(e.key === 'Backspace') press('back');
+            else if(e.key === 'Enter') press('ok');
+        });
+
+        els.btnBack.addEventListener('click', () => show('home'));
+        $('btnMenu').addEventListener('click', () => show('home'));
+        $('btnRetry').addEventListener('click', () => start(state.source));
+
+        paintStatic();
+        show('home');
     }
-}
 
-function createConfetti(){
-
-    const container =
-        document.getElementById('confetti');
-
-    container.innerHTML = '';
-
-    const emojis =
-        ['🎉','✨','🌟','💖','🎊'];
-
-    for(let i=0;i<70;i++){
-
-        const el =
-            document.createElement('span');
-
-        el.innerHTML =
-            emojis[Math.floor(
-                Math.random()*emojis.length
-            )];
-
-        el.style.left =
-            Math.random()*100 + 'vw';
-
-        el.style.animationDuration =
-            (3 + Math.random()*4) + 's';
-
-        el.style.animationDelay =
-            Math.random()*2 + 's';
-
-        container.appendChild(el);
-    }
-}
-
-generateExercises();
+    return { init };
+})();

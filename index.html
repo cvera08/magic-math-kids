@@ -1,100 +1,98 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Math LDK</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Matemáticas LDK</title>
 
 <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
 
-<div class="confetti" id="confetti"></div>
+<div class="confetti-layer" id="confetti"></div>
 
-<div class="container">
+<div class="app">
 
-    <div class="top-bar">
-        <select
-            id="languageSelect"
-            class="language-select"
-            aria-label="Language"
-            onchange="setLanguage(this.value)"
-        >
-            <option value="en">English</option>
-            <option value="es">Español</option>
-        </select>
-    </div>
-
-    <div class="title">
-        <div class="crown">👑</div>
-        <h1 data-i18n="title">💖 Math LDK ✨</h1>
-    </div>
-
-    <div class="subtitle" data-i18n="subtitle">
-        Learning through play 🌟
-    </div>
-
-    <div class="card">
-
-        <h2 data-i18n="operationsTitle">🪄 Write the operations</h2>
-
-<textarea id="operations">
-2+2
-5-2
-2*4
-3/3
-</textarea>
-
-        <button onclick="generateExercises()" data-i18n="generateButton">
-            🪄 Generate exercises
-        </button>
-
-        <div id="warningArea"></div>
-
-    </div>
-
-    <div id="exerciseSection" class="hidden">
-
-        <div class="card">
-
-            <div class="progress-wrapper">
-
-                <div class="progress-text" id="progressText">
-                    🌈 Progress: 0/0
-                </div>
-
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-
-            </div>
-
-            <div id="exerciseContainer"></div>
-
-            <div class="celebration">
-                <h2>🎉🎉🎉</h2>
-                <h2 data-i18n="magicTitle">🪄 MAGIC! 🪄</h2>
-
-                <p data-i18n="completedMessage">
-                    You completed all the exercises!
-                </p>
-
-                <p>
-                    🌟 🌟 🌟 🌟 🌟
-                </p>
-            </div>
-
+    <header class="topbar">
+        <button id="btnBack" class="btn-back hidden" data-i18n="menu"></button>
+        <h1 class="brand" data-i18n="brand"></h1>
+        <div class="lang-toggle" id="langToggle">
+            <button data-lang="es">ES</button>
+            <button data-lang="en">EN</button>
         </div>
+    </header>
 
-    </div>
+    <main>
+
+        <section id="screen-home" class="screen">
+
+            <p class="tagline" data-i18n="tagline"></p>
+
+            <div class="homework-card">
+                <h2 data-i18n="homeworkTitle"></h2>
+                <p class="homework-hint" data-i18n="homeworkHint"></p>
+                <textarea id="homeworkText" rows="5" spellcheck="false" autocomplete="off"></textarea>
+                <div id="homeworkWarnings" class="homework-warnings"></div>
+                <button id="btnHomework" class="btn-primary btn-wide" data-i18n="homeworkGo"></button>
+            </div>
+
+        </section>
+
+        <section id="screen-quiz" class="screen hidden">
+
+            <div class="quiz-progress">
+                <div class="quiz-progress-text" id="quizProgressText"></div>
+                <div class="progress-bar"><div class="progress-fill" id="quizProgressFill"></div></div>
+            </div>
+
+            <div class="quiz-card">
+                <p class="quiz-instruction" id="quizInstruction"></p>
+                <div class="quiz-prompt" id="quizPrompt"></div>
+                <div class="quiz-options" id="quizOptions"></div>
+                <p class="quiz-feedback" id="quizFeedback"></p>
+            </div>
+
+            <div class="keypad hidden" id="keypad">
+                <button data-key="1">1</button>
+                <button data-key="2">2</button>
+                <button data-key="3">3</button>
+                <button data-key="4">4</button>
+                <button data-key="5">5</button>
+                <button data-key="6">6</button>
+                <button data-key="7">7</button>
+                <button data-key="8">8</button>
+                <button data-key="9">9</button>
+                <button data-key="back" class="key-back" id="keyBack">⌫</button>
+                <button data-key="0">0</button>
+                <button data-key="ok" class="key-ok" id="keyOk">✓</button>
+            </div>
+
+        </section>
+
+        <section id="screen-end" class="screen hidden">
+
+            <div class="end-card">
+                <h2 id="endTitle"></h2>
+                <p id="endScore"></p>
+
+                <div class="end-buttons">
+                    <button id="btnRetry" class="btn-primary" data-i18n="playAgain"></button>
+                    <button id="btnMenu" class="btn-secondary" data-i18n="home"></button>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
 
 </div>
 
 <script src="js/i18n.js"></script>
 <script src="js/engine.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/confetti.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/main.js"></script>
 
 </body>
 </html>

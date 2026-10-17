@@ -30,6 +30,8 @@ eq(parsed.warnings.map(w => [w.key, w.line]),
    'parser warnings');
 eq(ENGINE.parseOperations('5/0').warnings.map(w => w.key), ['exactDivisions'], 'division by zero');
 eq(ENGINE.parseOperations('').exercises.length, 0, 'empty box');
+eq(ENGINE.parseOperations('2-5').warnings.map(w => w.key), ['negativeResult'], 'negative result');
+eq(ENGINE.homeworkSession(parsed.exercises).map(q => q.answer), [4,3,8,1,28,12,4], 'homework keeps the order');
 
 console.log('parser ok');
 console.log(problems ? `\n${problems} PROBLEM(S)` : '\nall good');

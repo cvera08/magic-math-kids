@@ -22,6 +22,23 @@ const ENGINE = (() => {
         return NaN;
     }
 
+    /* one exercise: "a op b", its answer and a stable key ("7+8") used
+       to remember which facts she keeps missing */
+    function fact(a, op, b){
+        return { a, op, b, result: solve(a, op, b), key: `${a}${op}${b}` };
+    }
+
+    /* A question asks about one fact. 'keypad' = type the answer on the
+       on-screen number pad. */
+    function keypadQuestion(f){
+        return { type: 'keypad', fact: f, answer: f.result };
+    }
+
+    /* The grown-up's homework keeps their order — it is their list. */
+    function homeworkSession(exercises){
+        return exercises.map(keypadQuestion);
+    }
+
     /* Free text, one operation per line ("15+13", "8 / 2", "3x4").
        Returns the exercises it understood, in order, and a warning per
        line it could not use — the grown-up sees those under the box. */
@@ -58,11 +75,17 @@ const ENGINE = (() => {
                     return;
                 }
 
-                exercises.push({ a, op, b, result: solve(a, op, b) });
+                // the keypad has no minus key, and first grade has no negatives
+                if(op === '-' && b > a){
+                    warnings.push({ key: 'negativeResult', line });
+                    return;
+                }
+
+                exercises.push(fact(a, op, b));
             });
 
         return { exercises, warnings };
     }
 
-    return { symbol, solve, parseOperations };
+    return { symbol, solve, fact, parseOperations, homeworkSession };
 })();
