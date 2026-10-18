@@ -31,7 +31,13 @@ const ENGINE = (() => {
     /* A question asks about one fact. 'keypad' = type the answer on the
        on-screen number pad. */
     function keypadQuestion(f){
-        return { type: 'keypad', fact: f, answer: f.result };
+        return { type: 'keypad', fact: f, answer: f.result, vertical: isVertical(f) };
+    }
+
+    /* two-digit sums are written one above the other, the way she does
+       them in her notebook */
+    function isVertical(f){
+        return f.gen === 'big' || (f.op === '+' || f.op === '-') && f.a >= 10 && f.b >= 10 && f.a % 10 + f.b % 10 > 0;
     }
 
     /* ---------------- generators ----------------

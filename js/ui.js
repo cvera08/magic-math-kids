@@ -149,7 +149,15 @@ const UI = (() => {
         els.instruction.textContent = I18N.t('typeAnswer');
     }
 
-    function exprHtml(f, slot){
+    function exprHtml(f, slot, vertical){
+        if(vertical){
+            return `<div class="vexpr">
+                <span></span><span class="num">${f.a}</span>
+                <span class="op">${ENGINE.symbol(f.op)}</span><span class="num">${f.b}</span>
+                <span class="vline"></span>
+                <span></span>${slot}
+            </div>`;
+        }
         return `<div class="expr">
             <span class="num">${f.a}</span>
             <span class="op">${ENGINE.symbol(f.op)}</span>
@@ -171,7 +179,7 @@ const UI = (() => {
         els.feedback.className = 'quiz-feedback';
         els.options.innerHTML = '';
 
-        els.prompt.innerHTML = exprHtml(q.fact, '<span class="answer-box" id="answerBox"></span>');
+        els.prompt.innerHTML = exprHtml(q.fact, '<span class="answer-box" id="answerBox"></span>', q.vertical);
         els.keypad.classList.remove('hidden');
         paintTyped();
     }
