@@ -37,5 +37,34 @@ const STORAGE = (() => {
         write(SETTINGS_KEY, all);
     }
 
-    return { read, write, getSetting, setSetting };
+    /* ---------- best score per level ---------- */
+
+    const BEST_KEY = 'math-ldk-best-scores';
+
+    function getBest(levelId){
+        return read(BEST_KEY, {})[levelId] || null;
+    }
+
+    /* more stars wins; with the same stars, more right answers wins */
+    function saveBest(levelId, stars, correct, total){
+        const all = read(BEST_KEY, {});
+        const current = all[levelId];
+        if(!current || stars > current.stars ||
+           (stars === current.stars && correct > current.correct)){
+            all[levelId] = { stars, correct, total };
+            write(BEST_KEY, all);
+            return true;
+        }
+        return false;
+    }
+
+    function resetScores(){
+        try{
+            localStorage.removeItem(BEST_KEY);
+        }catch(e){
+            /* ignore */
+        }
+    }
+
+    return { read, write, getSetting, setSetting, getBest, saveBest, resetScores };
 })();

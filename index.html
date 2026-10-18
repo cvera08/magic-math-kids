@@ -45,6 +45,8 @@
                 <button id="btnHomework" class="btn-primary btn-wide" data-i18n="homeworkGo"></button>
             </div>
 
+            <button id="btnViewScores" class="link-btn" data-i18n="viewScores"></button>
+
         </section>
 
         <section id="screen-quiz" class="screen hidden">
@@ -81,8 +83,10 @@
         <section id="screen-end" class="screen hidden">
 
             <div class="end-card">
+                <div class="end-stars" id="endStars"></div>
                 <h2 id="endTitle"></h2>
                 <p id="endScore"></p>
+                <p id="endBest" class="end-best"></p>
 
                 <div class="end-buttons">
                     <button id="btnRetry" class="btn-primary" data-i18n="playAgain"></button>
@@ -94,6 +98,18 @@
 
     </main>
 
+</div>
+
+<div class="modal-backdrop hidden" id="scoresBackdrop">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2 data-i18n="scoresTitle"></h2>
+            <button class="modal-close" id="btnCloseScores">✕</button>
+        </div>
+        <p class="modal-hint" data-i18n="scoresHint"></p>
+        <div class="scores-list" id="scoresList"></div>
+        <button id="btnResetScores" class="link-btn" data-i18n="resetScores"></button>
+    </div>
 </div>
 
 <script src="js/i18n.js"></script>

@@ -33,7 +33,16 @@ const I18N = (() => {
             revealed: 'Era {answer}. ¡La próxima sale! 💪',
 
             endTitle: '🪄 ¡MAGIA! 🪄',
-            endScore: 'Hiciste {total} cuentas',
+            endTitles: ['', '¡Bien hecho! 🌱', '¡Muy bien! 🌟', '🪄 ¡MAGIA! 🪄'],
+            endScore: '{correct} de {total} a la primera',
+            newBest: '🏆 ¡Nuevo récord!',
+            yourBest: 'Tu mejor puntaje: {correct}/{total}',
+            viewScores: '📊 Ver puntajes',
+            scoresTitle: '📊 Tus puntajes',
+            scoresHint: 'Lo mejor que hiciste en cada nivel. Las estrellas son un resumen; el número dice cuántas te salieron a la primera.',
+            notPlayed: 'todavía no',
+            resetScores: '🔄 Reiniciar récords',
+            resetConfirm: '¿Seguro? Tocá de nuevo para borrar',
             playAgain: '🔁 Jugar de nuevo',
             home: '🏠 Menú',
         },
@@ -63,7 +72,16 @@ const I18N = (() => {
             revealed: 'It was {answer}. You’ll get the next one! 💪',
 
             endTitle: '🪄 MAGIC! 🪄',
-            endScore: 'You did {total} sums',
+            endTitles: ['', 'Well done! 🌱', 'Great job! 🌟', '🪄 MAGIC! 🪄'],
+            endScore: '{correct} of {total} on the first try',
+            newBest: '🏆 New record!',
+            yourBest: 'Your best: {correct}/{total}',
+            viewScores: '📊 See scores',
+            scoresTitle: '📊 Your scores',
+            scoresHint: 'Your best on each level. Stars are a summary; the number says how many you got on the first try.',
+            notPlayed: 'not yet',
+            resetScores: '🔄 Reset records',
+            resetConfirm: 'Sure? Tap again to erase',
             playAgain: '🔁 Play again',
             home: '🏠 Menu',
         },
@@ -93,5 +111,11 @@ const I18N = (() => {
         return value.replace(/\{(\w+)\}/g, (_, name) => (vars && name in vars) ? vars[name] : '');
     }
 
-    return { STRINGS, t, guess, setLang, getLang };
+    /* one entry of a list, e.g. tAt('endTitles', 3) */
+    function tAt(key, index){
+        const list = STRINGS[lang][key] || STRINGS.es[key] || [];
+        return list[index] || '';
+    }
+
+    return { STRINGS, t, tAt, guess, setLang, getLang };
 })();

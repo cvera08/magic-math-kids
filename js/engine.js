@@ -139,6 +139,16 @@ const ENGINE = (() => {
         return makeFacts(level, count, rng).map(keypadQuestion);
     }
 
+    /* stars from answers right on the first try — the same cut-offs as
+       english-ldk, so both apps feel the same to her */
+    function starsFor(firstTry, total){
+        if(total === 0) return 0;
+        const ratio = firstTry / total;
+        if(ratio >= 0.9) return 3;
+        if(ratio >= 0.6) return 2;
+        return 1;
+    }
+
     /* The grown-up's homework keeps their order — it is their list. */
     function homeworkSession(exercises){
         return exercises.map(keypadQuestion);
@@ -192,5 +202,5 @@ const ENGINE = (() => {
         return { exercises, warnings };
     }
 
-    return { symbol, solve, fact, parseOperations, homeworkSession, buildSession, GENERATORS };
+    return { symbol, solve, fact, parseOperations, homeworkSession, buildSession, starsFor, GENERATORS };
 })();

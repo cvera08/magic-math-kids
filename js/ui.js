@@ -56,8 +56,19 @@ const UI = (() => {
         return obj[I18N.getLang()] || obj.es;
     }
 
+    function renderStars(n){
+        return [1, 2, 3].map(i =>
+            `<span class="${i <= n ? 'star-filled' : 'star-empty'}">★</span>`
+        ).join('');
+    }
+
     function levelCard(level, extraClass){
+        const best = STORAGE.getBest(level.id);
+        const badge = best
+            ? `<span class="card-badge">${renderStars(best.stars)}</span>`
+            : '';
         return `<button class="card ${extraClass || ''}" data-level="${level.id}">
+            ${badge}
             <span class="card-icon">${level.icon}</span>
             <span class="card-title">${name(level.name)}</span>
             <span class="card-sub">${name(level.sub)}</span>
@@ -74,6 +85,49 @@ const UI = (() => {
         ).join('');
     }
 
+    /* ---------------- scores ---------------- */
+
+    let resetArmed = false;
+
+    function paintScores(){
+        els.scoresList.innerHTML = [CONTENT.MIX, ...CONTENT.LEVELS].map(level => {
+            const best = STORAGE.getBest(level.id);
+            const value = best
+                ? `<span class="score-frac">${best.correct}/${best.total}</span>${renderStars(best.stars)}`
+                : `<span class="score-empty">${I18N.t('notPlayed')}</span>`;
+            return `<div class="score-row">
+                <span class="score-icon">${level.icon}</span>
+                <span class="score-name">${name(level.name)}</span>
+                <span class="score-value">${value}</span>
+            </div>`;
+        }).join('');
+        els.btnResetScores.textContent = I18N.t(resetArmed ? 'resetConfirm' : 'resetScores');
+        els.btnResetScores.classList.toggle('armed', resetArmed);
+    }
+
+    function openScores(){
+        resetArmed = false;
+        paintScores();
+        els.scoresBackdrop.classList.remove('hidden');
+    }
+
+    function closeScores(){
+        els.scoresBackdrop.classList.add('hidden');
+        paintHome();
+    }
+
+    /* two taps, so a stray tap never wipes her records */
+    function resetScores(){
+        if(!resetArmed){
+            resetArmed = true;
+            paintScores();
+            return;
+        }
+        STORAGE.resetScores();
+        resetArmed = false;
+        paintScores();
+    }
+
     /* everything drawn by hand has to be redrawn after a language switch */
     function repaintCopy(){
         paintStatic();
@@ -84,6 +138,7 @@ const UI = (() => {
             paintInstruction(current());
         }
         if(!$('screen-end').classList.contains('hidden')) paintEnd();
+        if(!els.scoresBackdrop.classList.contains('hidden')) paintScores();
     }
 
     function setLanguage(lang){
@@ -255,16 +310,36 @@ const UI = (() => {
     /* ---------------- end ---------------- */
 
     function paintEnd(){
-        els.endTitle.textContent = I18N.t('endTitle');
-        els.endScore.textContent = I18N.t('endScore', { total: state.questions.length });
+        const r = state.result;
+        els.endStars.innerHTML = renderStars(r.stars);
+        els.endTitle.textContent = I18N.tAt('endTitles', r.stars);
+        els.endScore.textContent = I18N.t('endScore', { correct: r.correct, total: r.total });
+        if(r.isNewBest) els.endBest.textContent = I18N.t('newBest');
+        else if(r.best) els.endBest.textContent = I18N.t('yourBest', { correct: r.best.correct, total: r.best.total });
+        else els.endBest.textContent = '';
     }
 
     function finish(){
+        const total = state.questions.length;
+        const stars = ENGINE.starsFor(state.firstTry, total);
+        const levelId = state.source.kind === 'level' ? state.source.levelId : null;
+
+        state.result = { stars, correct: state.firstTry, total, isNewBest: false, best: null };
+        if(levelId){
+            state.result.isNewBest = STORAGE.saveBest(levelId, stars, state.firstTry, total);
+            state.result.best = STORAGE.getBest(levelId);
+        }
+
         els.progressFill.style.width = '100%';
         els.keypad.classList.add('hidden');
         paintEnd();
         show('end');
-        CONFETTI.burst(els.confetti, 70);
+        CONFETTI.burst(els.confetti, 30 + stars * 20);
+    }
+
+    function goHome(){
+        paintHome();
+        show('home');
     }
 
     /* ---------------- helpers ---------------- */
@@ -293,6 +368,11 @@ const UI = (() => {
         els.keypad = $('keypad');
         els.keyBack = $('keyBack');
         els.keyOk = $('keyOk');
+        els.endStars = $('endStars');
+        els.endBest = $('endBest');
+        els.scoresBackdrop = $('scoresBackdrop');
+        els.scoresList = $('scoresList');
+        els.btnResetScores = $('btnResetScores');
         els.endTitle = $('endTitle');
         els.endScore = $('endScore');
         els.confetti = $('confetti');
@@ -336,8 +416,14 @@ const UI = (() => {
             else if(e.key === 'Enter') press('ok');
         });
 
-        els.btnBack.addEventListener('click', () => show('home'));
-        $('btnMenu').addEventListener('click', () => show('home'));
+        els.btnBack.addEventListener('click', goHome);
+        $('btnMenu').addEventListener('click', goHome);
+        $('btnViewScores').addEventListener('click', openScores);
+        $('btnCloseScores').addEventListener('click', closeScores);
+        els.btnResetScores.addEventListener('click', resetScores);
+        els.scoresBackdrop.addEventListener('click', (e) => {
+            if(e.target === els.scoresBackdrop) closeScores();
+        });
         $('btnRetry').addEventListener('click', () => start(state.source));
 
         paintStatic();

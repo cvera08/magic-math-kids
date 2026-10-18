@@ -556,3 +556,137 @@ textarea{
     min-width: 2.4em;
     text-align: right;
 }
+
+/* ---------------- stars & scores ---------------- */
+
+.star-filled{ color: #ffc94d; }
+.star-empty{ color: #e8e2e8; }
+
+.card-badge{
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+.card-featured .star-empty{ color: rgba(255,255,255,.4); }
+
+.end-stars{
+    font-size: 50px;
+    letter-spacing: 6px;
+    margin-bottom: 6px;
+}
+
+.end-best{
+    color: var(--purple);
+    font-weight: bold;
+    min-height: 22px;
+}
+
+.link-btn{
+    display: block;
+    margin: 20px auto 0;
+    border: none;
+    background: none;
+    color: var(--muted);
+    font-size: 14px;
+    text-decoration: underline;
+    padding: 8px;
+}
+
+.link-btn.armed{
+    color: var(--orange);
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.modal-backdrop{
+    position: fixed;
+    inset: 0;
+    background: rgba(40, 20, 40, .45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 60;
+}
+
+.modal-card{
+    background: white;
+    border-radius: 22px;
+    padding: 18px;
+    width: 100%;
+    max-width: 440px;
+    max-height: 86vh;
+    overflow-y: auto;
+}
+
+.modal-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.modal-header h2{
+    margin: 0;
+    color: var(--pink);
+    font-size: 21px;
+}
+
+.modal-close{
+    border: none;
+    background: var(--pink-soft);
+    color: var(--pink);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.modal-hint{
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0 0 12px;
+    line-height: 1.4;
+}
+
+.score-row{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 2px;
+    border-bottom: 1px solid var(--border);
+}
+
+.score-row:last-child{ border-bottom: none; }
+
+.score-icon{
+    font-size: 22px;
+    width: 30px;
+    text-align: center;
+}
+
+.score-name{
+    flex: 1;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.score-value{
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.score-frac{
+    font-weight: bold;
+    margin-right: 4px;
+}
+
+.score-empty{
+    color: var(--muted);
+    font-style: italic;
+    font-size: 13px;
+}
