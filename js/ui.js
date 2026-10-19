@@ -234,7 +234,8 @@ const UI = (() => {
         els.feedback.className = 'quiz-feedback';
         els.options.innerHTML = '';
 
-        els.prompt.innerHTML = exprHtml(q.fact, '<span class="answer-box" id="answerBox"></span>', q.vertical);
+        els.prompt.innerHTML = exprHtml(q.fact, '<span class="answer-box" id="answerBox"></span>', q.vertical)
+            + '<div class="hint hidden" id="hint"></div>';
         els.keypad.classList.remove('hidden');
         paintTyped();
     }
@@ -294,8 +295,17 @@ const UI = (() => {
 
         state.typed = '';
         paintTyped();
+        showHint(q);
         els.feedback.textContent = I18N.t('tryAgain');
         els.feedback.className = 'quiz-feedback feedback-retry';
+    }
+
+    /* after a miss, draw the sum so she can count it */
+    function showHint(q){
+        const hint = $('hint');
+        if(!hint || !hint.classList.contains('hidden')) return;
+        hint.innerHTML = HINTS.render(q.fact);
+        hint.classList.remove('hidden');
     }
 
     function next(){

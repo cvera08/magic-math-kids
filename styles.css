@@ -690,3 +690,117 @@ textarea{
     font-style: italic;
     font-size: 13px;
 }
+
+/* ---------------- hints (drawn after a miss) ---------------- */
+
+.hint{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 6px 10px;
+    background: var(--orange-soft);
+    border-radius: 16px;
+    padding: 10px 12px;
+    max-width: 100%;
+    animation: pop-in .3s ease;
+}
+
+@keyframes pop-in{
+    from{ transform: scale(.9); opacity: 0; }
+    to{ transform: scale(1); opacity: 1; }
+}
+
+.hint-row{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    max-width: 100%;
+}
+
+.hint-item{
+    font-size: 22px;
+    line-height: 1.15;
+}
+
+.hint-item.gone{
+    position: relative;
+    opacity: .35;
+}
+
+.hint-item.gone::after{
+    content: '✕';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e0577f;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.hint-gap{
+    width: 8px;
+}
+
+.hint-sign{
+    font-size: 26px;
+    font-weight: bold;
+    color: var(--pink);
+}
+
+.blocks{
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+}
+
+.ten-bar{
+    width: 9px;
+    height: 54px;
+    border-radius: 3px;
+    background: repeating-linear-gradient(to bottom, var(--bar) 0 4.6px, rgba(255,255,255,.7) 4.6px 5.4px);
+}
+
+.ones{
+    display: grid;
+    grid-template-columns: repeat(2, 9px);
+    gap: 2px;
+    margin-left: 3px;
+}
+
+.one-dot{
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    background: var(--bar);
+}
+
+.c1{ --bar: var(--purple); }
+.c2{ --bar: var(--pink); }
+
+.blocks .gone, .c2.gone{ opacity: .35; }
+
+.hint-bags{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+.hint-bag{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: white;
+    border: 2px dashed var(--orange);
+    border-radius: 14px;
+    padding: 4px 8px;
+    font-size: 20px;
+}
+
+.bag-holder{
+    font-size: 26px;
+}
