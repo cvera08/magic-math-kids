@@ -14,6 +14,10 @@ const I18N = (() => {
             menu: '← Menú',
 
             howMany: '¿Cuántas cuentas?',
+            sounds: '🔔 Sonidos',
+            listen: '🔊 Escuchar',
+            ops: { '+': 'más', '-': 'menos', '*': 'por', '/': 'dividido' },
+            howMuchIs: '¿Cuánto es {a} {op} {b}?',
             orHomework: 'o una tarea que escribís vos',
 
             homeworkTitle: '📝 Tarea',
@@ -53,6 +57,10 @@ const I18N = (() => {
             menu: '← Menu',
 
             howMany: 'How many sums?',
+            sounds: '🔔 Sounds',
+            listen: '🔊 Listen',
+            ops: { '+': 'plus', '-': 'minus', '*': 'times', '/': 'divided by' },
+            howMuchIs: 'What is {a} {op} {b}?',
             orHomework: 'or homework you write',
 
             homeworkTitle: '📝 Homework',
@@ -107,6 +115,7 @@ const I18N = (() => {
         let value = STRINGS[lang][key];
         if(value === undefined) value = STRINGS.es[key];
         if(Array.isArray(value)) value = value[Math.floor(Math.random() * value.length)];
+        if(value && typeof value === 'object') return value;
         if(typeof value !== 'string') return '';
         return value.replace(/\{(\w+)\}/g, (_, name) => (vars && name in vars) ? vars[name] : '');
     }

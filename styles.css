@@ -804,3 +804,57 @@ textarea{
 .bag-holder{
     font-size: 26px;
 }
+
+/* ---------------- sound ---------------- */
+
+.toggle-bar{
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: -4px 0 14px;
+}
+
+.toggle{
+    border: 2px solid var(--border);
+    background: white;
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--muted);
+    text-decoration: line-through;
+}
+
+.toggle.on{
+    border-color: var(--purple);
+    background: var(--purple-soft);
+    color: #6a45b8;
+    text-decoration: none;
+}
+
+.quiz-head{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.quiz-head .quiz-instruction{
+    margin: 0;
+}
+
+.speaker-btn{
+    flex-shrink: 0;
+    border: 2px solid var(--blue);
+    background: var(--blue-soft);
+    color: #1f5f96;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.speaker-btn:active{
+    transform: scale(.95);
+}

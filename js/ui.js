@@ -252,6 +252,7 @@ const UI = (() => {
     function press(key){
         if(state.locked || els.keypad.classList.contains('hidden')) return;
 
+        AUDIO.tap();
         if(key === 'back'){
             state.typed = state.typed.slice(0, -1);
         }else if(key === 'ok'){
@@ -271,6 +272,7 @@ const UI = (() => {
             state.locked = true;
             if(state.tries === 0) state.firstTry++;
             box.classList.add('right');
+            AUDIO.correct();
             els.feedback.textContent = I18N.t('correct');
             els.feedback.className = 'quiz-feedback feedback-good';
             setTimeout(next, NEXT_DELAY);
@@ -278,6 +280,7 @@ const UI = (() => {
         }
 
         state.tries++;
+        AUDIO.wrong();
         box.classList.remove('wrong');
         void box.offsetWidth; // restart the shake animation
         box.classList.add('wrong');
@@ -298,6 +301,30 @@ const UI = (() => {
         showHint(q);
         els.feedback.textContent = I18N.t('tryAgain');
         els.feedback.className = 'quiz-feedback feedback-retry';
+    }
+
+    /* ---------------- sound ---------------- */
+
+    function spokenText(q){
+        const f = q.fact;
+        return I18N.t('howMuchIs', { a: f.a, op: I18N.t('ops')[f.op], b: f.b });
+    }
+
+    function speakCurrent(){
+        const q = current();
+        if(q) AUDIO.speak(spokenText(q), I18N.getLang());
+    }
+
+    function paintToggles(){
+        els.btnSounds.classList.toggle('on', AUDIO.isEnabled());
+        els.btnSounds.setAttribute('aria-pressed', AUDIO.isEnabled());
+    }
+
+    function toggleSounds(){
+        AUDIO.setEnabled(!AUDIO.isEnabled());
+        STORAGE.setSetting('sounds', AUDIO.isEnabled());
+        paintToggles();
+        AUDIO.correct();
     }
 
     /* after a miss, draw the sum so she can count it */
@@ -345,6 +372,7 @@ const UI = (() => {
         paintEnd();
         show('end');
         CONFETTI.burst(els.confetti, 30 + stars * 20);
+        AUDIO.complete();
     }
 
     function goHome(){
@@ -386,6 +414,8 @@ const UI = (() => {
         els.endTitle = $('endTitle');
         els.endScore = $('endScore');
         els.confetti = $('confetti');
+        els.btnSounds = $('btnSounds');
+        els.btnSpeak = $('btnSpeak');
 
         I18N.setLang(I18N.guess(STORAGE.getSetting('lang'), navigator.language));
         els.homeworkText.value = STORAGE.getSetting('homework', '15+13\n20-7\n4x5\n8/2');
@@ -396,6 +426,12 @@ const UI = (() => {
         });
 
         $('btnHomework').addEventListener('click', startHomework);
+
+        AUDIO.setEnabled(STORAGE.getSetting('sounds', true));
+        els.btnSounds.addEventListener('click', toggleSounds);
+        els.btnSpeak.addEventListener('click', speakCurrent);
+        els.btnSpeak.classList.toggle('hidden', !AUDIO.speechSupported);
+        document.addEventListener('pointerdown', AUDIO.unlock, { once: true });
 
         state.count = STORAGE.getSetting('count', CONTENT.DEFAULT_COUNT);
         if(!CONTENT.COUNTS.includes(state.count)) state.count = CONTENT.DEFAULT_COUNT;
@@ -438,6 +474,7 @@ const UI = (() => {
 
         paintStatic();
         paintHome();
+        paintToggles();
         show('home');
     }
 

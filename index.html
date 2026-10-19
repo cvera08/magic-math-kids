@@ -33,6 +33,10 @@
                 <div class="count-options" id="countOptions"></div>
             </div>
 
+            <div class="toggle-bar">
+                <button class="toggle" id="btnSounds" data-i18n="sounds"></button>
+            </div>
+
             <div id="levelGrid"></div>
 
             <div class="or-divider"><span data-i18n="orHomework"></span></div>
@@ -57,7 +61,10 @@
             </div>
 
             <div class="quiz-card">
-                <p class="quiz-instruction" id="quizInstruction"></p>
+                <div class="quiz-head">
+                    <p class="quiz-instruction" id="quizInstruction"></p>
+                    <button class="speaker-btn" id="btnSpeak" data-i18n="listen"></button>
+                </div>
                 <div class="quiz-prompt" id="quizPrompt"></div>
                 <div class="quiz-options" id="quizOptions"></div>
                 <p class="quiz-feedback" id="quizFeedback"></p>
@@ -116,6 +123,7 @@
 <script src="js/content.js"></script>
 <script src="js/engine.js"></script>
 <script src="js/hints.js"></script>
+<script src="js/audio.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/confetti.js"></script>
 <script src="js/ui.js"></script>
