@@ -315,9 +315,23 @@ const UI = (() => {
         if(q) AUDIO.speak(spokenText(q), I18N.getLang());
     }
 
+    let musicWanted = false;
+
     function paintToggles(){
         els.btnSounds.classList.toggle('on', AUDIO.isEnabled());
         els.btnSounds.setAttribute('aria-pressed', AUDIO.isEnabled());
+        els.btnMusic.classList.toggle('on', musicWanted);
+        els.btnMusic.setAttribute('aria-pressed', musicWanted);
+    }
+
+    /* calm bed for concentrating — off until someone turns it on, and
+       remembered; browsers only start audio from a tap, so a saved "on"
+       waits for her first tap */
+    function toggleMusic(){
+        musicWanted = !musicWanted;
+        STORAGE.setSetting('music', musicWanted);
+        if(musicWanted) MUSIC.start(); else MUSIC.stop();
+        paintToggles();
     }
 
     function toggleSounds(){
@@ -416,6 +430,7 @@ const UI = (() => {
         els.confetti = $('confetti');
         els.btnSounds = $('btnSounds');
         els.btnSpeak = $('btnSpeak');
+        els.btnMusic = $('btnMusic');
 
         I18N.setLang(I18N.guess(STORAGE.getSetting('lang'), navigator.language));
         els.homeworkText.value = STORAGE.getSetting('homework', '15+13\n20-7\n4x5\n8/2');
@@ -431,7 +446,19 @@ const UI = (() => {
         els.btnSounds.addEventListener('click', toggleSounds);
         els.btnSpeak.addEventListener('click', speakCurrent);
         els.btnSpeak.classList.toggle('hidden', !AUDIO.speechSupported);
-        document.addEventListener('pointerdown', AUDIO.unlock, { once: true });
+        document.addEventListener('pointerdown', () => {
+            AUDIO.unlock();
+            if(musicWanted && !document.hidden) MUSIC.start();
+        }, { once: true });
+
+        musicWanted = STORAGE.getSetting('music', false);
+        els.btnMusic.addEventListener('click', toggleMusic);
+
+        // no music from a phone in a pocket
+        document.addEventListener('visibilitychange', () => {
+            if(document.hidden) MUSIC.stop();
+            else if(musicWanted && AUDIO.context() && AUDIO.context().state !== 'suspended') MUSIC.start();
+        });
 
         state.count = STORAGE.getSetting('count', CONTENT.DEFAULT_COUNT);
         if(!CONTENT.COUNTS.includes(state.count)) state.count = CONTENT.DEFAULT_COUNT;

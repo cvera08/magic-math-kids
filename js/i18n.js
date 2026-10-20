@@ -15,6 +15,7 @@ const I18N = (() => {
 
             howMany: '¿Cuántas cuentas?',
             sounds: '🔔 Sonidos',
+            music: '🎵 Música',
             listen: '🔊 Escuchar',
             ops: { '+': 'más', '-': 'menos', '*': 'por', '/': 'dividido' },
             howMuchIs: '¿Cuánto es {a} {op} {b}?',
@@ -58,6 +59,7 @@ const I18N = (() => {
 
             howMany: 'How many sums?',
             sounds: '🔔 Sounds',
+            music: '🎵 Music',
             listen: '🔊 Listen',
             ops: { '+': 'plus', '-': 'minus', '*': 'times', '/': 'divided by' },
             howMuchIs: 'What is {a} {op} {b}?',
