@@ -200,8 +200,8 @@ const UI = (() => {
         els.progressFill.style.width = (state.index / total * 100) + '%';
     }
 
-    function paintInstruction(){
-        els.instruction.textContent = I18N.t('typeAnswer');
+    function paintInstruction(q){
+        els.instruction.textContent = I18N.t('instr_' + q.type);
     }
 
     function exprHtml(f, slot, vertical){
@@ -222,6 +222,23 @@ const UI = (() => {
         </div>`;
     }
 
+    const BOX = '<span class="answer-box" id="answerBox"></span>';
+    const HINT = '<div class="hint hidden" id="hint"></div>';
+
+    /* question types answered on the number pad */
+    const PAD_TYPES = ['keypad'];
+
+    /* how each type draws its prompt; the options (if any) come from the
+       engine and are drawn the same way for every type */
+    const PROMPTS = {
+        keypad: (q) => exprHtml(q.fact, BOX, q.vertical),
+        choose: (q) => exprHtml(q.fact, BOX, q.vertical),
+    };
+
+    function optionHtml(o, i){
+        return `<button class="option ${o.className || ''}" data-index="${i}">${o.html || o.label}</button>`;
+    }
+
     function renderQuestion(){
         const q = current();
         state.tries = 0;
@@ -232,11 +249,11 @@ const UI = (() => {
         paintInstruction(q);
         els.feedback.textContent = '';
         els.feedback.className = 'quiz-feedback';
-        els.options.innerHTML = '';
 
-        els.prompt.innerHTML = exprHtml(q.fact, '<span class="answer-box" id="answerBox"></span>', q.vertical)
-            + '<div class="hint hidden" id="hint"></div>';
-        els.keypad.classList.remove('hidden');
+        els.prompt.innerHTML = PROMPTS[q.type](q) + HINT;
+        els.options.innerHTML = (q.options || []).map(optionHtml).join('');
+        els.options.dataset.count = (q.options || []).length;
+        els.keypad.classList.toggle('hidden', !PAD_TYPES.includes(q.type));
         paintTyped();
     }
 
@@ -266,41 +283,76 @@ const UI = (() => {
 
     function submit(value){
         const q = current();
-        const box = $('answerBox');
-
         if(value === q.answer){
-            state.locked = true;
-            if(state.tries === 0) state.firstTry++;
-            box.classList.add('right');
-            AUDIO.correct();
-            els.feedback.textContent = I18N.t('correct');
-            els.feedback.className = 'quiz-feedback feedback-good';
-            setTimeout(next, NEXT_DELAY);
+            onRight(q);
             return;
         }
+        shake($('answerBox'));
+        if(onWrong(q)) return;
+        state.typed = '';
+        paintTyped();
+    }
 
+    function chooseOption(button){
+        if(state.locked || button.disabled) return;
+        const q = current();
+        const option = q.options[Number(button.dataset.index)];
+
+        if(option.isCorrect){
+            button.classList.add('option-correct');
+            onRight(q);
+            return;
+        }
+        button.classList.add('option-wrong');
+        button.disabled = true;
+        onWrong(q);
+    }
+
+    function shake(el){
+        if(!el) return;
+        el.classList.remove('wrong');
+        void el.offsetWidth; // restart the shake animation
+        el.classList.add('wrong');
+    }
+
+    function onRight(q){
+        state.locked = true;
+        if(state.tries === 0) state.firstTry++;
+        const box = $('answerBox');
+        if(box){
+            state.typed = String(q.answer);
+            paintTyped();
+            box.classList.add('right');
+        }
+        AUDIO.correct();
+        els.feedback.textContent = I18N.t('correct');
+        els.feedback.className = 'quiz-feedback feedback-good';
+        setTimeout(next, NEXT_DELAY);
+    }
+
+    /* returns true when the question is over (answer revealed) */
+    function onWrong(q){
         state.tries++;
         AUDIO.wrong();
-        box.classList.remove('wrong');
-        void box.offsetWidth; // restart the shake animation
-        box.classList.add('wrong');
 
-        if(state.tries >= MAX_TRIES){
+        const left = (q.options || []).filter(o => !o.isCorrect).length;
+        const outOfTries = q.options ? state.tries >= left : state.tries >= MAX_TRIES;
+
+        if(outOfTries && !q.options){
             state.locked = true;
             state.typed = String(q.answer);
             paintTyped();
-            box.classList.add('revealed');
+            $('answerBox').classList.add('revealed');
             els.feedback.textContent = I18N.t('revealed', { answer: q.answer });
             els.feedback.className = 'quiz-feedback feedback-retry';
             setTimeout(next, REVEAL_DELAY);
-            return;
+            return true;
         }
 
-        state.typed = '';
-        paintTyped();
         showHint(q);
         els.feedback.textContent = I18N.t('tryAgain');
         els.feedback.className = 'quiz-feedback feedback-retry';
+        return false;
     }
 
     /* ---------------- sound ---------------- */
@@ -474,6 +526,11 @@ const UI = (() => {
             state.count = Number(b.dataset.count);
             STORAGE.setSetting('count', state.count);
             paintHome();
+        });
+
+        els.options.addEventListener('click', (e) => {
+            const b = e.target.closest('.option');
+            if(b) chooseOption(b);
         });
 
         els.keypad.addEventListener('click', (e) => {

@@ -30,7 +30,8 @@ const I18N = (() => {
             noExercises: 'Escribí al menos una cuenta 🙂',
 
             progress: 'Cuenta {n} de {total}',
-            typeAnswer: '¿Cuánto da?',
+            instr_keypad: '¿Cuánto da?',
+            instr_choose: 'Tocá la respuesta',
             ok: 'Listo',
             erase: 'Borrar',
             correct: ['¡Muy bien! ✨', '¡Genial! 🌟', '¡Eso es! 💖', '¡Bravo! 🎉'],
@@ -74,7 +75,8 @@ const I18N = (() => {
             noExercises: 'Write at least one sum 🙂',
 
             progress: 'Sum {n} of {total}',
-            typeAnswer: 'What is the answer?',
+            instr_keypad: 'What is the answer?',
+            instr_choose: 'Tap the answer',
             ok: 'Done',
             erase: 'Delete',
             correct: ['Great job! ✨', 'Awesome! 🌟', 'That’s it! 💖', 'Bravo! 🎉'],

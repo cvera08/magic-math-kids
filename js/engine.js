@@ -135,8 +135,59 @@ const ENGINE = (() => {
         return facts;
     }
 
+    function shuffle(list, rng = Math.random){
+        const arr = [...list];
+        for(let i = arr.length - 1; i > 0; i--){
+            const j = Math.floor(rng() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    /* a "shuffled bag" so every question type shows up about equally
+       often instead of clumping by chance — same as english-ldk */
+    function makeBag(items, rng){
+        let bag = [];
+        return () => {
+            if(bag.length === 0) bag = shuffle(items, rng);
+            return bag.pop();
+        };
+    }
+
+    /* believable wrong answers: one or two off, ten off for big numbers,
+       or what the other operation would give (8 − 3 → 11) */
+    function nearMisses(answer, f, rng){
+        const pool = new Set([answer + 1, answer - 1, answer + 2, answer - 2]);
+        if(answer >= 20) [answer + 10, answer - 10].forEach(v => pool.add(v));
+        if(f && f.op === '+') pool.add(f.a - f.b);
+        if(f && f.op === '-') pool.add(f.a + f.b);
+        if(f && f.op === '*') pool.add(f.a + f.b);
+        return shuffle([...pool].filter(v => v >= 0 && v !== answer), rng);
+    }
+
+    function numberOptions(answer, f, rng){
+        const wrong = nearMisses(answer, f, rng).slice(0, 2);
+        return shuffle([answer, ...wrong], rng)
+            .map(v => ({ label: String(v), value: v, isCorrect: v === answer }));
+    }
+
+    /* question builders, one per type */
+    const BUILDERS = {
+        keypad: (f) => keypadQuestion(f),
+
+        // pick the answer out of three bubbles
+        choose: (f, rng) => ({ type: 'choose', fact: f, answer: f.result, options: numberOptions(f.result, f, rng) }),
+    };
+
+    const DEFAULT_TYPES = ['keypad', 'keypad', 'choose'];
+
+    function buildQuestion(type, f, rng = Math.random){
+        return BUILDERS[type](f, rng);
+    }
+
     function buildSession({ level, count, rng = Math.random }){
-        return makeFacts(level, count, rng).map(keypadQuestion);
+        const nextType = makeBag(level.types || DEFAULT_TYPES, rng);
+        return makeFacts(level, count, rng).map(f => buildQuestion(nextType(), f, rng));
     }
 
     /* stars from answers right on the first try — the same cut-offs as
@@ -202,5 +253,5 @@ const ENGINE = (() => {
         return { exercises, warnings };
     }
 
-    return { symbol, solve, fact, parseOperations, homeworkSession, buildSession, starsFor, GENERATORS };
+    return { symbol, solve, fact, parseOperations, homeworkSession, buildSession, buildQuestion, starsFor, shuffle, GENERATORS, BUILDERS };
 })();

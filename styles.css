@@ -858,3 +858,43 @@ textarea{
 .speaker-btn:active{
     transform: scale(.95);
 }
+
+/* ---------------- tap-an-answer options ---------------- */
+
+.quiz-options{
+    grid-template-columns: repeat(3, 1fr);
+    margin-top: 14px;
+}
+
+.quiz-options[data-count="2"]{
+    grid-template-columns: 1fr 1fr;
+}
+
+.option{
+    min-height: 72px;
+    border-radius: 18px;
+    border: 2.5px solid var(--border);
+    background: white;
+    font-size: 30px;
+    font-weight: bold;
+    box-shadow: 0 3px 0 var(--border);
+    transition: background .2s ease, border-color .2s ease;
+}
+
+.option:active{
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 var(--border);
+}
+
+.option-correct{
+    background: var(--green-soft) !important;
+    border-color: var(--green) !important;
+    color: #206b3c;
+}
+
+.option-wrong{
+    background: var(--orange-soft) !important;
+    border-color: var(--orange) !important;
+    opacity: .55;
+    animation: shake .4s;
+}

@@ -50,6 +50,7 @@ const LIMITS = {
 };
 
 const levels = [...CONTENT.LEVELS, CONTENT.MIX];
+const typeCount = {};
 for(const level of levels){
     for(let i = 0; i < 300; i++){
         const session = ENGINE.buildSession({ level, count: 15 });
@@ -61,9 +62,19 @@ for(const level of levels){
             const gen = level.mix ? f.gen : level.gen;
             if(!LIMITS[gen](f)) fail(`${level.id}/${gen}: out of limits ${f.key}`);
             if(q.answer === undefined) fail(`${level.id}: question without an answer`);
+            typeCount[q.type] = (typeCount[q.type] || 0) + 1;
+            if(q.options){
+                const right = q.options.filter(o => o.isCorrect);
+                if(right.length !== 1) fail(`${level.id}/${q.type}: ${right.length} right options`);
+                else if(right[0].value !== q.answer) fail(`${level.id}/${q.type}: right option is not the answer`);
+                const labels = q.options.map(o => o.label);
+                if(new Set(labels).size !== labels.length) fail(`${level.id}/${q.type}: duplicate options ${labels}`);
+                if(q.options.some(o => typeof o.value === 'number' && o.value < 0)) fail(`${level.id}/${q.type}: negative option`);
+            }
         }
     }
     console.log(`${level.id}: ok`);
 }
+console.log('question types seen:', typeCount);
 console.log(problems ? `\n${problems} PROBLEM(S)` : '\nall good');
 process.exit(problems ? 1 : 0);
