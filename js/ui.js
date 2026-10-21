@@ -234,6 +234,9 @@ const UI = (() => {
         keypad: (q) => exprHtml(q.fact, BOX, q.vertical),
         choose: (q) => exprHtml(q.fact, BOX, q.vertical),
 
+        // 5 + 3 = 9 ✔/✘ — the claimed result sits in a plain box
+        truefalse: (q) => exprHtml(q.fact, `<span class="claim-box">${q.shown}</span>`, q.vertical),
+
         // 3 + ? = 7: the box takes the place of the hidden number
         missing: (q) => {
             const f = q.fact;
@@ -244,7 +247,8 @@ const UI = (() => {
     };
 
     function optionHtml(o, i){
-        return `<button class="option ${o.className || ''}" data-index="${i}">${o.html || o.label}</button>`;
+        const caption = o.value === true ? I18N.t('yes') : o.value === false ? I18N.t('no') : '';
+        return `<button class="option ${o.className || ''}" data-index="${i}">${o.label}${caption ? `<small>${caption}</small>` : ''}</button>`;
     }
 
     function renderQuestion(){
@@ -332,6 +336,12 @@ const UI = (() => {
             paintTyped();
             box.classList.add('right');
         }
+        // a wrong claim gets corrected on screen: 5 + 3 = ~~9~~ 8
+        const claim = els.prompt.querySelector('.claim-box');
+        if(claim && q.type === 'truefalse'){
+            claim.classList.add('right');
+            if(!q.answer) claim.innerHTML = `<s>${q.shown}</s> ${q.fact.result}`;
+        }
         AUDIO.correct();
         els.feedback.textContent = I18N.t('correct');
         els.feedback.className = 'quiz-feedback feedback-good';
@@ -368,6 +378,9 @@ const UI = (() => {
     function spokenText(q){
         const f = q.fact;
         const op = I18N.t('ops')[f.op];
+        if(q.type === 'truefalse'){
+            return I18N.t('isItTrue', { a: f.a, op, b: f.b, c: q.shown });
+        }
         if(q.type === 'missing'){
             const blank = I18N.t('whatNumber');
             return `${q.hide === 'a' ? blank : f.a} ${op} ${q.hide === 'b' ? blank : f.b} ${I18N.t('equals')} ${f.result}`;

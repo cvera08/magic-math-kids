@@ -191,7 +191,26 @@ const ENGINE = (() => {
         };
     };
 
-    const DEFAULT_TYPES = ['keypad', 'keypad', 'choose', 'missing'];
+    /* 5 + 3 = 9 — right or wrong? A wrong claim is only one or two off
+       (ten off for big numbers), so she has to actually work it out. */
+    BUILDERS.truefalse = (f, rng) => {
+        const isTrue = rng() < 0.5;
+        let shown = f.result;
+        if(!isTrue){
+            const offs = f.result >= 20 ? [1, -1, 2, -2, 10, -10] : [1, -1, 1, -1, 2, -2];
+            const candidates = shuffle(offs, rng).map(d => f.result + d).filter(v => v >= 0);
+            shown = candidates[0];
+        }
+        return {
+            type: 'truefalse', fact: f, shown, answer: isTrue,
+            options: [
+                { label: '✔', value: true, isCorrect: isTrue, className: 'option-mark option-yes' },
+                { label: '✘', value: false, isCorrect: !isTrue, className: 'option-mark option-no' },
+            ],
+        };
+    };
+
+    const DEFAULT_TYPES = ['keypad', 'keypad', 'choose', 'missing', 'truefalse'];
 
     function buildQuestion(type, f, rng = Math.random){
         return BUILDERS[type](f, rng);

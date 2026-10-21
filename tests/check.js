@@ -51,6 +51,7 @@ const LIMITS = {
 
 const levels = [...CONTENT.LEVELS, CONTENT.MIX];
 const typeCount = {};
+let tfTrue = 0, tfAll = 0;
 for(const level of levels){
     for(let i = 0; i < 300; i++){
         const session = ENGINE.buildSession({ level, count: 15 });
@@ -63,6 +64,11 @@ for(const level of levels){
             if(!LIMITS[gen](f)) fail(`${level.id}/${gen}: out of limits ${f.key}`);
             if(q.answer === undefined) fail(`${level.id}: question without an answer`);
             typeCount[q.type] = (typeCount[q.type] || 0) + 1;
+            if(q.type === 'truefalse'){
+                if((q.shown === f.result) !== q.answer) fail(`${level.id}: truefalse ${f.key}=${q.shown} marked ${q.answer}`);
+                if(Math.abs(q.shown - f.result) > (f.result >= 20 ? 10 : 2)) fail(`${level.id}: truefalse too obvious ${f.key}=${q.shown}`);
+                tfTrue += q.answer ? 1 : 0; tfAll++;
+            }
             if(q.type === 'missing' && q.answer !== f[q.hide]) fail(`${level.id}: missing number ${q.answer} is not ${q.hide} of ${f.key}`);
             if(q.options){
                 const right = q.options.filter(o => o.isCorrect);
@@ -70,12 +76,13 @@ for(const level of levels){
                 else if(right[0].value !== q.answer) fail(`${level.id}/${q.type}: right option is not the answer`);
                 const labels = q.options.map(o => o.label);
                 if(new Set(labels).size !== labels.length) fail(`${level.id}/${q.type}: duplicate options ${labels}`);
-                if(q.options.some(o => typeof o.value === 'number' && o.value < 0)) fail(`${level.id}/${q.type}: negative option`);
+                if(q.options.some(o => o.value < 0)) fail(`${level.id}/${q.type}: negative option`);
             }
         }
     }
     console.log(`${level.id}: ok`);
 }
 console.log('question types seen:', typeCount);
+if(tfAll && (tfTrue / tfAll < 0.4 || tfTrue / tfAll > 0.6)) fail(`true/false is lopsided: ${tfTrue}/${tfAll} true`);
 console.log(problems ? `\n${problems} PROBLEM(S)` : '\nall good');
 process.exit(problems ? 1 : 0);
