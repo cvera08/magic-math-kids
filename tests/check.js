@@ -63,6 +63,7 @@ for(const level of levels){
             if(!LIMITS[gen](f)) fail(`${level.id}/${gen}: out of limits ${f.key}`);
             if(q.answer === undefined) fail(`${level.id}: question without an answer`);
             typeCount[q.type] = (typeCount[q.type] || 0) + 1;
+            if(q.type === 'missing' && q.answer !== f[q.hide]) fail(`${level.id}: missing number ${q.answer} is not ${q.hide} of ${f.key}`);
             if(q.options){
                 const right = q.options.filter(o => o.isCorrect);
                 if(right.length !== 1) fail(`${level.id}/${q.type}: ${right.length} right options`);

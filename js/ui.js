@@ -233,6 +233,14 @@ const UI = (() => {
     const PROMPTS = {
         keypad: (q) => exprHtml(q.fact, BOX, q.vertical),
         choose: (q) => exprHtml(q.fact, BOX, q.vertical),
+
+        // 3 + ? = 7: the box takes the place of the hidden number
+        missing: (q) => {
+            const f = q.fact;
+            const a = q.hide === 'a' ? BOX : `<span class="num">${f.a}</span>`;
+            const b = q.hide === 'b' ? BOX : `<span class="num">${f.b}</span>`;
+            return `<div class="expr">${a}<span class="op">${ENGINE.symbol(f.op)}</span>${b}<span class="op">=</span><span class="num">${f.result}</span></div>`;
+        },
     };
 
     function optionHtml(o, i){
@@ -359,7 +367,12 @@ const UI = (() => {
 
     function spokenText(q){
         const f = q.fact;
-        return I18N.t('howMuchIs', { a: f.a, op: I18N.t('ops')[f.op], b: f.b });
+        const op = I18N.t('ops')[f.op];
+        if(q.type === 'missing'){
+            const blank = I18N.t('whatNumber');
+            return `${q.hide === 'a' ? blank : f.a} ${op} ${q.hide === 'b' ? blank : f.b} ${I18N.t('equals')} ${f.result}`;
+        }
+        return I18N.t('howMuchIs', { a: f.a, op, b: f.b });
     }
 
     function speakCurrent(){

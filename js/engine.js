@@ -179,7 +179,19 @@ const ENGINE = (() => {
         choose: (f, rng) => ({ type: 'choose', fact: f, answer: f.result, options: numberOptions(f.result, f, rng) }),
     };
 
-    const DEFAULT_TYPES = ['keypad', 'keypad', 'choose'];
+    BUILDERS.missing = (f, rng) => {
+        // 3 + ? = 7, or ? + 4 = 7 — which side hides is random
+        const hide = rng() < 0.5 ? 'a' : 'b';
+        const answer = f[hide];
+        const wrong = shuffle([...new Set([...nearMisses(answer, null, rng).slice(0, 3), f.result])]
+            .filter(v => v !== answer && v >= 0), rng).slice(0, 2);
+        return {
+            type: 'missing', fact: f, hide, answer,
+            options: shuffle([answer, ...wrong], rng).map(v => ({ label: String(v), value: v, isCorrect: v === answer })),
+        };
+    };
+
+    const DEFAULT_TYPES = ['keypad', 'keypad', 'choose', 'missing'];
 
     function buildQuestion(type, f, rng = Math.random){
         return BUILDERS[type](f, rng);
