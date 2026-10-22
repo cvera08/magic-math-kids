@@ -226,7 +226,7 @@ const UI = (() => {
     const HINT = '<div class="hint hidden" id="hint"></div>';
 
     /* question types answered on the number pad */
-    const PAD_TYPES = ['keypad'];
+    const PAD_TYPES = ['keypad', 'sequence'];
 
     /* how each type draws its prompt; the options (if any) come from the
        engine and are drawn the same way for every type */
@@ -236,6 +236,11 @@ const UI = (() => {
 
         // 5 + 3 = 9 ✔/✘ — the claimed result sits in a plain box
         truefalse: (q) => exprHtml(q.fact, `<span class="claim-box">${q.shown}</span>`, q.vertical),
+
+        // 10, 20, 30, ? — one bead per number, the gap is the box
+        sequence: (q) => `<div class="seq">${q.seq.map((v, i) =>
+            i === q.blank ? BOX : `<span class="seq-num">${v}</span>`
+        ).join('')}</div>`,
 
         // 7 + 2 ◯ 8
         compare: (q) => {
@@ -390,6 +395,9 @@ const UI = (() => {
 
     function spokenText(q){
         const f = q.fact;
+        if(q.type === 'sequence'){
+            return q.seq.map((v, i) => i === q.blank ? I18N.t('whatNumber') : v).join(', ') + '. ' + I18N.t('instr_sequence');
+        }
         const op = I18N.t('ops')[f.op];
         if(q.type === 'compare'){
             return I18N.t('compareSpoken', { a: f.a, op, b: f.b, c: q.other });
@@ -439,7 +447,7 @@ const UI = (() => {
     function showHint(q){
         const hint = $('hint');
         if(!hint || !hint.classList.contains('hidden')) return;
-        hint.innerHTML = HINTS.render(q.fact);
+        hint.innerHTML = HINTS.forQuestion(q);
         hint.classList.remove('hidden');
     }
 

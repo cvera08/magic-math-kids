@@ -224,7 +224,35 @@ const ENGINE = (() => {
         };
     };
 
-    const DEFAULT_TYPES = ['keypad', 'keypad', 'choose', 'missing', 'truefalse', 'compare'];
+    /* 10, 20, 30, ? — counting on in steps that fit the level: ones and
+       twos for small sums, backwards for take-aways, tens for the tens,
+       and 2s–5s (skip counting, the root of times tables) for sweets. */
+    const SEQUENCE_STEPS = {
+        sum10: [1, 2], sub10: [-1, -2], sum20: [1, 2], sub20: [-1, -2],
+        tens: [10], big: [5, 10, -10], mul: [2, 3, 4, 5], div: [2, 3, 4, 5],
+    };
+
+    BUILDERS.sequence = (f, rng) => {
+        const step = pick(SEQUENCE_STEPS[f.gen] || [1, 2], rng);
+        const length = 5;
+        const span = Math.abs(step) * (length - 1);
+        const size = Math.abs(step);
+        const top = size >= 10 ? 100 : size >= 5 || f.gen === 'mul' || f.gen === 'div' ? 30 : 20;
+        let start;
+        if(step === 10) start = int(0, 9, rng) + 10 * int(0, Math.floor((top - span - 9) / 10), rng);
+        else if(step === -10) start = int(span, top - 1, rng);
+        else if(step > 0) start = step === 1 ? int(0, top - span, rng) : step * int(0, Math.floor((top - span) / step), rng);
+        else start = int(span, top, rng);
+        const seq = [];
+        for(let i = 0; i < length; i++) seq.push(start + step * i);
+        const blank = rng() < 0.7 ? length - 1 : int(1, length - 2, rng);
+        return {
+            type: 'sequence', seq, blank, step, answer: seq[blank],
+            fact: { key: `seq${seq.join(',')}`, gen: f.gen },
+        };
+    };
+
+    const DEFAULT_TYPES = ['keypad', 'keypad', 'choose', 'missing', 'truefalse', 'compare', 'sequence'];
 
     function buildQuestion(type, f, rng = Math.random){
         return BUILDERS[type](f, rng);

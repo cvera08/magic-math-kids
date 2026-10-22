@@ -55,5 +55,19 @@ const HINTS = (() => {
         return '';
     }
 
-    return { render };
+    /* 10, 20, 30, ?: show the jump between numbers */
+    function jumps(q){
+        const sign = q.step > 0 ? '+' : '−';
+        const hop = `<span class="hop">${sign}${Math.abs(q.step)}</span>`;
+        return `<span class="hops">${q.seq.map((v, i) =>
+            (i ? hop : '') + `<span class="hop-num">${i === q.blank ? '?' : v}</span>`
+        ).join('')}</span>`;
+    }
+
+    function forQuestion(q){
+        if(q.type === 'sequence') return jumps(q);
+        return render(q.fact);
+    }
+
+    return { render, forQuestion };
 })();

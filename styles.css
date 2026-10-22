@@ -983,3 +983,50 @@ textarea{
     font-size: 13px;
     color: var(--muted);
 }
+
+/* ---------------- sequences ---------------- */
+
+.seq{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: clamp(26px, 8.5vw, 38px);
+    font-weight: bold;
+}
+
+.seq-num{
+    min-width: 1.6em;
+    padding: 4px 6px;
+    border-radius: 12px;
+    background: var(--pink-soft);
+    text-align: center;
+}
+
+.seq .answer-box{
+    min-width: 1.6em;
+    padding: 4px 6px;
+}
+
+.hops{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+    font-weight: bold;
+}
+
+.hop{
+    font-size: 13px;
+    color: var(--orange);
+    border-top: 2px solid var(--orange);
+    border-radius: 50% 50% 0 0;
+    padding: 2px 4px 0;
+    transform: translateY(-8px);
+}
+
+.hop-num{
+    font-size: 20px;
+}

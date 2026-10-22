@@ -58,6 +58,15 @@ for(const level of levels){
         if(session.length !== 15) fail(`${level.id}: ${session.length} questions`);
         for(const q of session){
             const f = q.fact;
+            if(q.type === 'sequence'){
+                typeCount.sequence = (typeCount.sequence || 0) + 1;
+                const steps = q.seq.slice(1).map((v, i) => v - q.seq[i]);
+                if(new Set(steps).size !== 1 || steps[0] !== q.step) fail(`${level.id}: uneven sequence ${q.seq}`);
+                if(q.seq.some(v => v < 0 || v > 100)) fail(`${level.id}: sequence out of range ${q.seq}`);
+                if(q.answer !== q.seq[q.blank]) fail(`${level.id}: sequence answer ${q.answer} vs ${q.seq}`);
+                if(level.id === 'sum10' && q.seq.some(v => v > 20)) fail(`sum10 sequence too big ${q.seq}`);
+                continue;
+            }
             if(f.result !== ENGINE.solve(f.a, f.op, f.b)) fail(`${level.id}: wrong result ${f.key}`);
             if(!Number.isInteger(f.result) || f.result < 0) fail(`${level.id}: bad result ${f.key}=${f.result}`);
             const gen = level.mix ? f.gen : level.gen;
