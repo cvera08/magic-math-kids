@@ -210,7 +210,21 @@ const ENGINE = (() => {
         };
     };
 
-    const DEFAULT_TYPES = ['keypad', 'keypad', 'choose', 'missing', 'truefalse'];
+    /* 7 + 2 ◯ 8 — is the sum bigger, smaller or the same? The number on
+       the right is close to the answer, so she has to work it out. */
+    BUILDERS.compare = (f, rng) => {
+        const kind = pick(['>', '<', '='], rng);
+        const step = f.result >= 20 ? pick([1, 2, 10], rng) : pick([1, 1, 2], rng);
+        let other = kind === '=' ? f.result : kind === '>' ? f.result - step : f.result + step;
+        let answer = kind;
+        if(other < 0){ other = f.result + step; answer = '<'; }
+        return {
+            type: 'compare', fact: f, other, answer,
+            options: ['>', '<', '='].map(sym => ({ label: sym, value: sym, isCorrect: sym === answer, className: 'option-compare' })),
+        };
+    };
+
+    const DEFAULT_TYPES = ['keypad', 'keypad', 'choose', 'missing', 'truefalse', 'compare'];
 
     function buildQuestion(type, f, rng = Math.random){
         return BUILDERS[type](f, rng);

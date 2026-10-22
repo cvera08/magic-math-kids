@@ -237,6 +237,13 @@ const UI = (() => {
         // 5 + 3 = 9 ✔/✘ — the claimed result sits in a plain box
         truefalse: (q) => exprHtml(q.fact, `<span class="claim-box">${q.shown}</span>`, q.vertical),
 
+        // 7 + 2 ◯ 8
+        compare: (q) => {
+            const f = q.fact;
+            return `<div class="expr"><span class="num">${f.a}</span><span class="op">${ENGINE.symbol(f.op)}</span><span class="num">${f.b}</span>
+                <span class="compare-slot" id="compareSlot">?</span><span class="num">${q.other}</span></div>`;
+        },
+
         // 3 + ? = 7: the box takes the place of the hidden number
         missing: (q) => {
             const f = q.fact;
@@ -247,7 +254,8 @@ const UI = (() => {
     };
 
     function optionHtml(o, i){
-        const caption = o.value === true ? I18N.t('yes') : o.value === false ? I18N.t('no') : '';
+        const caption = o.value === true ? I18N.t('yes') : o.value === false ? I18N.t('no')
+            : o.value === '>' ? I18N.t('bigger') : o.value === '<' ? I18N.t('smaller') : o.value === '=' ? I18N.t('same') : '';
         return `<button class="option ${o.className || ''}" data-index="${i}">${o.label}${caption ? `<small>${caption}</small>` : ''}</button>`;
     }
 
@@ -342,6 +350,11 @@ const UI = (() => {
             claim.classList.add('right');
             if(!q.answer) claim.innerHTML = `<s>${q.shown}</s> ${q.fact.result}`;
         }
+        const slot = $('compareSlot');
+        if(slot){
+            slot.textContent = q.answer;
+            slot.classList.add('right');
+        }
         AUDIO.correct();
         els.feedback.textContent = I18N.t('correct');
         els.feedback.className = 'quiz-feedback feedback-good';
@@ -378,6 +391,9 @@ const UI = (() => {
     function spokenText(q){
         const f = q.fact;
         const op = I18N.t('ops')[f.op];
+        if(q.type === 'compare'){
+            return I18N.t('compareSpoken', { a: f.a, op, b: f.b, c: q.other });
+        }
         if(q.type === 'truefalse'){
             return I18N.t('isItTrue', { a: f.a, op, b: f.b, c: q.shown });
         }

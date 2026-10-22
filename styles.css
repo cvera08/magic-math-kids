@@ -946,3 +946,40 @@ textarea{
     color: #e0577f;
     font-size: .7em;
 }
+
+/* ---------------- bigger / smaller / same ---------------- */
+
+.compare-slot{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.3em;
+    height: 1.3em;
+    border: 3px dashed var(--purple);
+    border-radius: 50%;
+    color: #c9b6ef;
+    font-size: .8em;
+}
+
+.compare-slot.right{
+    border-style: solid;
+    border-color: var(--green);
+    background: var(--green-soft);
+    color: #206b3c;
+}
+
+.option-compare{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font-size: 36px;
+    line-height: 1;
+    color: var(--purple);
+}
+
+.option-compare small{
+    font-size: 13px;
+    color: var(--muted);
+}

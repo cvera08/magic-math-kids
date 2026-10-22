@@ -69,6 +69,11 @@ for(const level of levels){
                 if(Math.abs(q.shown - f.result) > (f.result >= 20 ? 10 : 2)) fail(`${level.id}: truefalse too obvious ${f.key}=${q.shown}`);
                 tfTrue += q.answer ? 1 : 0; tfAll++;
             }
+            if(q.type === 'compare'){
+                const want = f.result > q.other ? '>' : f.result < q.other ? '<' : '=';
+                if(want !== q.answer) fail(`${level.id}: compare ${f.key} vs ${q.other} says ${q.answer}`);
+                if(q.other < 0) fail(`${level.id}: compare against a negative number`);
+            }
             if(q.type === 'missing' && q.answer !== f[q.hide]) fail(`${level.id}: missing number ${q.answer} is not ${q.hide} of ${f.key}`);
             if(q.options){
                 const right = q.options.filter(o => o.isCorrect);
@@ -76,7 +81,7 @@ for(const level of levels){
                 else if(right[0].value !== q.answer) fail(`${level.id}/${q.type}: right option is not the answer`);
                 const labels = q.options.map(o => o.label);
                 if(new Set(labels).size !== labels.length) fail(`${level.id}/${q.type}: duplicate options ${labels}`);
-                if(q.options.some(o => o.value < 0)) fail(`${level.id}/${q.type}: negative option`);
+                if(q.options.some(o => typeof o.value === 'number' && o.value < 0)) fail(`${level.id}/${q.type}: negative option`);
             }
         }
     }
