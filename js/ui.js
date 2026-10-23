@@ -242,6 +242,9 @@ const UI = (() => {
             i === q.blank ? BOX : `<span class="seq-num">${v}</span>`
         ).join('')}</div>`,
 
+        // tens as bars, ones as dots
+        count: (q) => HINTS.countBlocks(q.n),
+
         // 7 + 2 ◯ 8
         compare: (q) => {
             const f = q.fact;
@@ -395,6 +398,7 @@ const UI = (() => {
 
     function spokenText(q){
         const f = q.fact;
+        if(q.type === 'count') return I18N.t('instr_count');
         if(q.type === 'sequence'){
             return q.seq.map((v, i) => i === q.blank ? I18N.t('whatNumber') : v).join(', ') + '. ' + I18N.t('instr_sequence');
         }

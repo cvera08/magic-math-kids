@@ -252,10 +252,34 @@ const ENGINE = (() => {
         };
     };
 
-    const DEFAULT_TYPES = ['keypad', 'keypad', 'choose', 'missing', 'truefalse', 'compare', 'sequence'];
+    /* tens as bars, ones as dots: which number is it? Only for the
+       levels that work with tens. Wrong choices swap the digits (34/43)
+       or are one ten / one unit off. */
+    const TENS_GENS = ['tens', 'big'];
 
+    BUILDERS.count = (f, rng) => {
+        if(!TENS_GENS.includes(f.gen)) return null;
+        const n = int(11, 99, rng);
+        const tens = Math.floor(n / 10), ones = n % 10;
+        const pool = new Set([n + 10, n - 10, n + 1, n - 1]);
+        if(ones && ones !== tens) pool.add(ones * 10 + tens);
+        const wrong = shuffle([...pool].filter(v => v > 0 && v <= 99 && v !== n), rng);
+        // the swapped digits are the classic mix-up, so keep it when we can
+        const swapped = ones && ones !== tens ? ones * 10 + tens : null;
+        const two = swapped ? [swapped, wrong.find(v => v !== swapped)] : wrong.slice(0, 2);
+        return {
+            type: 'count', n, answer: n,
+            fact: { key: `count${n}`, gen: f.gen },
+            options: shuffle([n, ...two], rng).map(v => ({ label: String(v), value: v, isCorrect: v === n })),
+        };
+    };
+
+    const DEFAULT_TYPES = ['keypad', 'keypad', 'choose', 'missing', 'truefalse', 'compare', 'sequence', 'count'];
+
+    /* a type that doesn't fit this fact (count on a small sum) falls
+       back to the plain number pad */
     function buildQuestion(type, f, rng = Math.random){
-        return BUILDERS[type](f, rng);
+        return BUILDERS[type](f, rng) || BUILDERS.keypad(f, rng);
     }
 
     function buildSession({ level, count, rng = Math.random }){

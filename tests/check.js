@@ -58,6 +58,12 @@ for(const level of levels){
         if(session.length !== 15) fail(`${level.id}: ${session.length} questions`);
         for(const q of session){
             const f = q.fact;
+            if(q.type === 'count'){
+                typeCount.count = (typeCount.count || 0) + 1;
+                if(!['tens', 'big'].includes(f.gen)) fail(`${level.id}: count question on ${f.gen}`);
+                if(q.options.filter(o => o.isCorrect).length !== 1 || new Set(q.options.map(o => o.value)).size !== 3) fail(`count options ${q.options.map(o => o.value)}`);
+                continue;
+            }
             if(q.type === 'sequence'){
                 typeCount.sequence = (typeCount.sequence || 0) + 1;
                 const steps = q.seq.slice(1).map((v, i) => v - q.seq[i]);

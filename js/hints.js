@@ -64,10 +64,19 @@ const HINTS = (() => {
         ).join('')}</span>`;
     }
 
+    /* the count question itself: a big set of blocks */
+    function countBlocks(n){
+        return `<div class="count-blocks">${blocks(n, 'c1')}</div>
+            <div class="count-legend"><span class="ten-bar c1 mini"></span> = 10 &nbsp; <span class="one-dot c1"></span> = 1</div>`;
+    }
+
     function forQuestion(q){
+        if(q.type === 'count'){
+            return `<span class="hint-text">${Math.floor(q.n / 10)} × <span class="ten-bar c1 mini"></span> + ${q.n % 10} × <span class="one-dot c1"></span></span>`;
+        }
         if(q.type === 'sequence') return jumps(q);
         return render(q.fact);
     }
 
-    return { render, forQuestion };
+    return { render, forQuestion, countBlocks };
 })();

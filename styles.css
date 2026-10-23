@@ -1030,3 +1030,54 @@ textarea{
 .hop-num{
     font-size: 20px;
 }
+
+/* ---------------- count the blocks ---------------- */
+
+.count-blocks .blocks{
+    gap: 5px;
+}
+
+.count-blocks .ten-bar{
+    width: 14px;
+    height: 90px;
+    background: repeating-linear-gradient(to bottom, var(--bar) 0 7.8px, rgba(255,255,255,.75) 7.8px 9px);
+}
+
+.count-blocks .ones{
+    grid-template-columns: repeat(2, 14px);
+    gap: 4px;
+    margin-left: 8px;
+}
+
+.count-blocks .one-dot{
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+}
+
+.hint-text{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.ten-bar.mini{
+    height: 30px;
+    width: 7px;
+    background: repeating-linear-gradient(to bottom, var(--bar) 0 2.6px, rgba(255,255,255,.7) 2.6px 3px);
+}
+
+.count-legend{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--muted);
+}
+
+.count-legend .ten-bar.mini{
+    height: 22px;
+}
