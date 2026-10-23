@@ -136,6 +136,9 @@ const UI = (() => {
         if(!$('screen-quiz').classList.contains('hidden') && current()){
             paintProgress();
             paintInstruction(current());
+            const story = els.prompt.querySelector('.story-text');
+            if(story) story.textContent = storyText(current());
+            paintFeedback();
         }
         if(!$('screen-end').classList.contains('hidden')) paintEnd();
         if(!els.scoresBackdrop.classList.contains('hidden')) paintScores();
@@ -226,7 +229,7 @@ const UI = (() => {
     const HINT = '<div class="hint hidden" id="hint"></div>';
 
     /* question types answered on the number pad */
-    const PAD_TYPES = ['keypad', 'sequence'];
+    const PAD_TYPES = ['keypad', 'sequence', 'story'];
 
     /* how each type draws its prompt; the options (if any) come from the
        engine and are drawn the same way for every type */
@@ -241,6 +244,22 @@ const UI = (() => {
         sequence: (q) => `<div class="seq">${q.seq.map((v, i) =>
             i === q.blank ? BOX : `<span class="seq-num">${v}</span>`
         ).join('')}</div>`,
+
+        // "There are 4 kids and each gets 2 sweets…" plus a small picture
+        story: (q) => {
+            const f = q.fact;
+            const holder = CONTENT.STORY_HOLDERS[q.holder];
+            const item = CONTENT.STORY_ITEMS[q.item];
+            let picture;
+            if(f.op === '*') picture = `<span class="story-row">${holder.icon.repeat(f.a)}</span><span class="story-each">1 ${holder.icon} → ${item.icon.repeat(f.b)}</span>`;
+            else if(f.op === '/') picture = `<span class="story-row">${item.icon.repeat(f.a)}</span><span class="story-row">${holder.icon.repeat(f.b)}</span>`;
+            else picture = `<span class="story-row">${item.icon.repeat(f.a)}</span>`;
+            return `<p class="story-text">${storyText(q)}</p>
+                <div class="story-body">
+                    <div class="story-picture" id="storyPicture">${picture}</div>
+                    <span class="story-equals">=</span>${BOX}
+                </div>`;
+        },
 
         // tens as bars, ones as dots
         count: (q) => HINTS.countBlocks(q.n),
@@ -261,6 +280,22 @@ const UI = (() => {
         },
     };
 
+    function storyText(q){
+        const lang = I18N.getLang();
+        const f = q.fact;
+        const holder = CONTENT.STORY_HOLDERS[q.holder];
+        const item = CONTENT.STORY_ITEMS[q.item];
+        const template = CONTENT.STORIES[f.op][lang] || CONTENT.STORIES[f.op].es;
+        const howMany = item.g === 'f' ? 'cuántas' : 'cuántos';
+        return template
+            .replace(/\{a\}/g, f.a)
+            .replace(/\{b\}/g, f.b)
+            .replace(/\{holders\}/g, holder[lang] || holder.es)
+            .replace(/\{items\}/g, item[lang] || item.es)
+            .replace(/\{each\}/g, holder.g === 'f' ? 'cada una' : 'cada uno')
+            .replace(/\{HowMany\}/g, howMany[0].toUpperCase() + howMany.slice(1));
+    }
+
     function optionHtml(o, i){
         const caption = o.value === true ? I18N.t('yes') : o.value === false ? I18N.t('no')
             : o.value === '>' ? I18N.t('bigger') : o.value === '<' ? I18N.t('smaller') : o.value === '=' ? I18N.t('same') : '';
@@ -275,8 +310,7 @@ const UI = (() => {
 
         paintProgress();
         paintInstruction(q);
-        els.feedback.textContent = '';
-        els.feedback.className = 'quiz-feedback';
+        setFeedback(null);
 
         els.prompt.innerHTML = PROMPTS[q.type](q) + HINT;
         els.options.innerHTML = (q.options || []).map(optionHtml).join('');
@@ -336,6 +370,20 @@ const UI = (() => {
         onWrong(q);
     }
 
+    /* the line under the card; remembered so a language switch can
+       redraw it */
+    let feedback = null;
+
+    function setFeedback(key, vars, className){
+        feedback = key ? { key, vars, className } : null;
+        paintFeedback();
+    }
+
+    function paintFeedback(){
+        els.feedback.textContent = feedback ? I18N.t(feedback.key, feedback.vars) : '';
+        els.feedback.className = 'quiz-feedback ' + (feedback ? feedback.className : '');
+    }
+
     function shake(el){
         if(!el) return;
         el.classList.remove('wrong');
@@ -364,8 +412,7 @@ const UI = (() => {
             slot.classList.add('right');
         }
         AUDIO.correct();
-        els.feedback.textContent = I18N.t('correct');
-        els.feedback.className = 'quiz-feedback feedback-good';
+        setFeedback('correct', null, 'feedback-good');
         setTimeout(next, NEXT_DELAY);
     }
 
@@ -382,15 +429,13 @@ const UI = (() => {
             state.typed = String(q.answer);
             paintTyped();
             $('answerBox').classList.add('revealed');
-            els.feedback.textContent = I18N.t('revealed', { answer: q.answer });
-            els.feedback.className = 'quiz-feedback feedback-retry';
+            setFeedback('revealed', { answer: q.answer }, 'feedback-retry');
             setTimeout(next, REVEAL_DELAY);
             return true;
         }
 
         showHint(q);
-        els.feedback.textContent = I18N.t('tryAgain');
-        els.feedback.className = 'quiz-feedback feedback-retry';
+        setFeedback('tryAgain', null, 'feedback-retry');
         return false;
     }
 
@@ -399,6 +444,7 @@ const UI = (() => {
     function spokenText(q){
         const f = q.fact;
         if(q.type === 'count') return I18N.t('instr_count');
+        if(q.type === 'story') return storyText(q);
         if(q.type === 'sequence'){
             return q.seq.map((v, i) => i === q.blank ? I18N.t('whatNumber') : v).join(', ') + '. ' + I18N.t('instr_sequence');
         }
@@ -449,6 +495,16 @@ const UI = (() => {
 
     /* after a miss, draw the sum so she can count it */
     function showHint(q){
+        // a story's picture turns into the counting drawing, in place,
+        // so the number pad stays on screen
+        const picture = $('storyPicture');
+        if(picture){
+            if(!picture.classList.contains('hinted')){
+                picture.innerHTML = HINTS.forQuestion(q);
+                picture.classList.add('hinted');
+            }
+            return;
+        }
         const hint = $('hint');
         if(!hint || !hint.classList.contains('hidden')) return;
         hint.innerHTML = HINTS.forQuestion(q);

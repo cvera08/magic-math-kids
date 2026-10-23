@@ -404,7 +404,8 @@ textarea{
 /* ---------------- short phones (iPhone SE) ---------------- */
 
 @media (max-height: 700px){
-    .keypad button{ height: 50px; }
+    .keypad button{ height: 48px; font-size: 24px; }
+    .keypad{ gap: 7px; margin-top: 10px; }
     .quiz-card{ padding: 12px; }
     .quiz-prompt{ min-height: 76px; }
 }
@@ -1080,4 +1081,62 @@ textarea{
 
 .count-legend .ten-bar.mini{
     height: 22px;
+}
+
+/* ---------------- story problems ---------------- */
+
+.story-text{
+    margin: 0;
+    font-size: 17px;
+    line-height: 1.35;
+    text-align: center;
+    font-weight: bold;
+}
+
+.story-picture{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: var(--pink-soft);
+    border-radius: 16px;
+    padding: 8px 14px;
+}
+
+.story-row{
+    font-size: 26px;
+    letter-spacing: 2px;
+    text-align: center;
+}
+
+.story-each{
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--muted);
+}
+
+.story-body{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 34px;
+    font-weight: bold;
+}
+
+.story-equals{
+    color: var(--pink);
+}
+
+.story-picture.hinted{
+    background: var(--orange-soft);
+}
+
+.story-picture .hint-bags{
+    gap: 5px;
+}
+
+.story-picture .hint-bag{
+    font-size: 16px;
+    padding: 2px 5px;
 }

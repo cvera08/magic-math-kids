@@ -39,19 +39,20 @@ const HINTS = (() => {
         return `<span class="hint-bags">${html}</span>`;
     }
 
-    function render(f){
+    function render(f, icons){
+        const item = icons ? icons.item : null;
         const sign = `<span class="hint-sign">${ENGINE.symbol(f.op)}</span>`;
 
         if(f.op === '+'){
-            if(f.result <= 20) return row(f.a, '🍓') + sign + row(f.b, '🍋');
+            if(f.result <= 20) return row(f.a, item || '🍓') + sign + row(f.b, item || '🍋');
             return blocks(f.a, 'c1') + sign + blocks(f.b, 'c2');
         }
         if(f.op === '-'){
-            if(f.a <= 20) return row(f.a, '🍪', i => i >= f.a - f.b ? 'gone' : '');
+            if(f.a <= 20) return row(f.a, item || '🍪', i => i >= f.a - f.b ? 'gone' : '');
             return blocks(f.a, 'c1') + sign + blocks(f.b, 'c2 gone');
         }
-        if(f.op === '*') return bags(f.a, f.b, '🍬');
-        if(f.op === '/') return bags(f.b, f.a / f.b, '🍬', '🧒');
+        if(f.op === '*') return bags(f.a, f.b, item || '🍬', icons ? icons.holder : null);
+        if(f.op === '/') return bags(f.b, f.a / f.b, item || '🍬', icons ? icons.holder : '🧒');
         return '';
     }
 
@@ -75,6 +76,12 @@ const HINTS = (() => {
             return `<span class="hint-text">${Math.floor(q.n / 10)} × <span class="ten-bar c1 mini"></span> + ${q.n % 10} × <span class="one-dot c1"></span></span>`;
         }
         if(q.type === 'sequence') return jumps(q);
+        if(q.type === 'story' && typeof CONTENT !== 'undefined'){
+            return render(q.fact, {
+                item: CONTENT.STORY_ITEMS[q.item].icon,
+                holder: CONTENT.STORY_HOLDERS[q.holder].icon,
+            });
+        }
         return render(q.fact);
     }
 

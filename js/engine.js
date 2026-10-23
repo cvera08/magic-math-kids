@@ -274,7 +274,22 @@ const ENGINE = (() => {
         };
     };
 
-    const DEFAULT_TYPES = ['keypad', 'keypad', 'choose', 'missing', 'truefalse', 'compare', 'sequence', 'count'];
+    /* a story problem told with sweets: the sum is the same, the words
+       and pictures are what she sees. Only small numbers — nobody eats
+       34 cookies. Holders and items are picked here (pure); the words
+       come from CONTENT.STORIES at draw time, in the current language. */
+    BUILDERS.story = (f, rng) => {
+        if(typeof CONTENT === 'undefined') return null;
+        const small = (f.op === '*' || f.op === '/') || (f.a >= 2 && f.a <= 20 && f.b <= 10 && f.result <= 20);
+        if(!small) return null;
+        return {
+            type: 'story', fact: f, answer: f.result,
+            holder: int(0, CONTENT.STORY_HOLDERS.length - 1, rng),
+            item: int(0, CONTENT.STORY_ITEMS.length - 1, rng),
+        };
+    };
+
+    const DEFAULT_TYPES = ['keypad', 'keypad', 'choose', 'missing', 'truefalse', 'compare', 'sequence', 'count', 'story'];
 
     /* a type that doesn't fit this fact (count on a small sum) falls
        back to the plain number pad */

@@ -58,6 +58,10 @@ for(const level of levels){
         if(session.length !== 15) fail(`${level.id}: ${session.length} questions`);
         for(const q of session){
             const f = q.fact;
+            if(q.type === 'story'){
+                if(f.result > 20 || f.a > 20) fail(`${level.id}: story with big numbers ${f.key}`);
+                if(!CONTENT.STORY_HOLDERS[q.holder] || !CONTENT.STORY_ITEMS[q.item]) fail(`${level.id}: story picks a missing holder/item`);
+            }
             if(q.type === 'count'){
                 typeCount.count = (typeCount.count || 0) + 1;
                 if(!['tens', 'big'].includes(f.gen)) fail(`${level.id}: count question on ${f.gen}`);
