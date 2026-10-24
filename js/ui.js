@@ -9,6 +9,7 @@
 const UI = (() => {
 
     const MAX_DIGITS = 3;
+    const WEAK_MIN = 3;           // the "tricky ones" card needs a few to be worth it
     const MAX_TRIES = 3;          // after the third miss we show the answer
     const NEXT_DELAY = 900;       // pause on a right answer before moving on
     const REVEAL_DELAY = 2200;    // longer, so she can read the answer
@@ -80,6 +81,10 @@ const UI = (() => {
             levelCard(CONTENT.MIX, 'card-featured') +
             `<div class="level-grid">${CONTENT.LEVELS.map(l => levelCard(l)).join('')}</div>`;
 
+        const weak = STORAGE.weakFacts();
+        els.btnWeak.classList.toggle('hidden', weak.length < WEAK_MIN);
+        els.weakSub.textContent = I18N.t('weakSub', { n: weak.length });
+
         els.countOptions.innerHTML = CONTENT.COUNTS.map(n =>
             `<button data-count="${n}" class="${n === state.count ? 'selected' : ''}">${n}</button>`
         ).join('');
@@ -126,6 +131,7 @@ const UI = (() => {
         STORAGE.resetScores();
         resetArmed = false;
         paintScores();
+        paintHome();
     }
 
     /* everything drawn by hand has to be redrawn after a language switch */
@@ -180,6 +186,8 @@ const UI = (() => {
 
     function buildQuestions(source){
         if(source.kind === 'homework') return ENGINE.homeworkSession(source.exercises);
+        if(source.kind === 'review') return ENGINE.reviewSession(source.facts);
+        if(source.kind === 'weak') return ENGINE.reviewSession(ENGINE.shuffle(STORAGE.weakFacts()).slice(0, state.count));
         return ENGINE.buildSession({ level: CONTENT.levelById(source.levelId), count: state.count });
     }
 
@@ -188,6 +196,7 @@ const UI = (() => {
         state.questions = buildQuestions(source);
         state.index = 0;
         state.firstTry = 0;
+        state.missed = [];
         CONFETTI.clear(els.confetti);
         show('quiz');
         renderQuestion();
@@ -394,6 +403,8 @@ const UI = (() => {
     function onRight(q){
         state.locked = true;
         if(state.tries === 0) state.firstTry++;
+        STORAGE.recordFact(q.fact, state.tries === 0);
+        if(state.tries > 0 && q.fact.op) state.missed.push(q.fact);
         const box = $('answerBox');
         if(box){
             state.typed = String(q.answer);
@@ -426,6 +437,8 @@ const UI = (() => {
 
         if(outOfTries && !q.options){
             state.locked = true;
+            STORAGE.recordFact(q.fact, false);
+            if(q.fact.op) state.missed.push(q.fact);
             state.typed = String(q.answer);
             paintTyped();
             $('answerBox').classList.add('revealed');
@@ -527,6 +540,8 @@ const UI = (() => {
         els.endStars.innerHTML = renderStars(r.stars);
         els.endTitle.textContent = I18N.tAt('endTitles', r.stars);
         els.endScore.textContent = I18N.t('endScore', { correct: r.correct, total: r.total });
+        els.btnPracticeMissed.classList.toggle('hidden', !state.missed.length);
+        els.btnPracticeMissed.textContent = I18N.t('practiceMissed', { n: state.missed.length });
         if(r.isNewBest) els.endBest.textContent = I18N.t('newBest');
         else if(r.best) els.endBest.textContent = I18N.t('yourBest', { correct: r.best.correct, total: r.best.total });
         else els.endBest.textContent = '';
@@ -588,6 +603,9 @@ const UI = (() => {
         els.scoresList = $('scoresList');
         els.btnResetScores = $('btnResetScores');
         els.endTitle = $('endTitle');
+        els.btnWeak = $('btnWeak');
+        els.weakSub = $('weakSub');
+        els.btnPracticeMissed = $('btnPracticeMissed');
         els.endScore = $('endScore');
         els.confetti = $('confetti');
         els.btnSounds = $('btnSounds');
@@ -659,6 +677,9 @@ const UI = (() => {
         els.btnBack.addEventListener('click', goHome);
         $('btnMenu').addEventListener('click', goHome);
         $('btnViewScores').addEventListener('click', openScores);
+        els.btnWeak.addEventListener('click', () => start({ kind: 'weak' }));
+        // the review never touches the best score: it is extra practice
+        els.btnPracticeMissed.addEventListener('click', () => start({ kind: 'review', facts: [...state.missed] }));
         $('btnCloseScores').addEventListener('click', closeScores);
         els.btnResetScores.addEventListener('click', resetScores);
         els.scoresBackdrop.addEventListener('click', (e) => {
@@ -672,5 +693,5 @@ const UI = (() => {
         show('home');
     }
 
-    return { init };
+    return { init, current };
 })();

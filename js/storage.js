@@ -58,13 +58,44 @@ const STORAGE = (() => {
         return false;
     }
 
+    /* ---------- per-fact memory: what she keeps getting wrong ----------
+       { "7+8": { a, op, b, gen, m: first-try misses, s: first-try hits in a row } }
+       A fact "costs her" while it has been missed and hasn't yet been got
+       right twice in a row on the first try — then it graduates off the
+       list, and comes back if she misses it again. Same rule as
+       english-ldk's "Lo que más le cuesta". */
+
+    const FACTS_KEY = 'math-ldk-fact-stats';
+
+    function recordFact(f, firstTry){
+        if(!f || !f.op) return; // sequences and block counts aren't facts
+        const all = read(FACTS_KEY, {});
+        const current = all[f.key] || { a: f.a, op: f.op, b: f.b, gen: f.gen, m: 0, s: 0 };
+        if(firstTry){
+            current.s += 1;
+        }else{
+            current.m += 1;
+            current.s = 0;
+        }
+        all[f.key] = current;
+        write(FACTS_KEY, all);
+    }
+
+    function weakFacts(){
+        const all = read(FACTS_KEY, {});
+        return Object.keys(all)
+            .filter(key => all[key].m > 0 && all[key].s < 2)
+            .map(key => all[key]);
+    }
+
     function resetScores(){
         try{
             localStorage.removeItem(BEST_KEY);
+            localStorage.removeItem(FACTS_KEY);
         }catch(e){
             /* ignore */
         }
     }
 
-    return { read, write, getSetting, setSetting, getBest, saveBest, resetScores };
+    return { read, write, getSetting, setSetting, getBest, saveBest, resetScores, recordFact, weakFacts };
 })();

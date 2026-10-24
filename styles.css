@@ -1140,3 +1140,33 @@ textarea{
     font-size: 16px;
     padding: 2px 5px;
 }
+
+/* ---------------- the tricky ones ---------------- */
+
+.card-weak{
+    margin-top: 12px;
+    background: var(--orange-soft);
+    border: 2px solid var(--orange);
+    color: #a35a1a;
+}
+
+.card-weak .card-sub{
+    color: #b87430;
+}
+
+.btn-practice{
+    display: block;
+    width: 100%;
+    margin-top: 16px;
+    border-radius: 16px;
+    background: var(--orange-soft);
+    color: #a35a1a;
+    border: 2px solid var(--orange);
+    font-size: 16px;
+    font-weight: bold;
+    padding: 13px 16px;
+}
+
+.btn-practice:active{
+    transform: scale(.98);
+}

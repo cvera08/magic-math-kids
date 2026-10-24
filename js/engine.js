@@ -297,6 +297,20 @@ const ENGINE = (() => {
         return BUILDERS[type](f, rng) || BUILDERS.keypad(f, rng);
     }
 
+    /* a review round over facts she already met (missed this round, or
+       keeps missing): same facts, but the question type varies so it
+       isn't the exact same screen again */
+    const REVIEW_TYPES = ['keypad', 'choose', 'missing', 'truefalse'];
+
+    function reviewSession(facts, rng = Math.random){
+        const nextType = makeBag(REVIEW_TYPES, rng);
+        return shuffle(facts, rng).map(f => {
+            const copy = fact(f.a, f.op, f.b);
+            copy.gen = f.gen;
+            return buildQuestion(nextType(), copy, rng);
+        });
+    }
+
     function buildSession({ level, count, rng = Math.random }){
         const nextType = makeBag(level.types || DEFAULT_TYPES, rng);
         return makeFacts(level, count, rng).map(f => buildQuestion(nextType(), f, rng));
@@ -365,5 +379,5 @@ const ENGINE = (() => {
         return { exercises, warnings };
     }
 
-    return { symbol, solve, fact, parseOperations, homeworkSession, buildSession, buildQuestion, starsFor, shuffle, GENERATORS, BUILDERS };
+    return { symbol, solve, fact, parseOperations, homeworkSession, buildSession, reviewSession, buildQuestion, starsFor, shuffle, GENERATORS, BUILDERS };
 })();

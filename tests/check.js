@@ -106,6 +106,17 @@ for(const level of levels){
     }
     console.log(`${level.id}: ok`);
 }
+/* ---------- review rounds keep exactly the facts they were given ---------- */
+const reviewFacts = [ENGINE.fact(7, '+', 8), ENGINE.fact(20, '-', 7), ENGINE.fact(4, '*', 5)];
+for(let i = 0; i < 200; i++){
+    const review = ENGINE.reviewSession(reviewFacts);
+    eq(review.map(q => q.fact.key).sort(), ['20-7', '4*5', '7+8'], 'review facts');
+    for(const q of review){
+        if(!['keypad', 'choose', 'missing', 'truefalse'].includes(q.type)) fail(`review type ${q.type}`);
+    }
+}
+console.log('review ok');
+
 console.log('question types seen:', typeCount);
 if(tfAll && (tfTrue / tfAll < 0.4 || tfTrue / tfAll > 0.6)) fail(`true/false is lopsided: ${tfTrue}/${tfAll} true`);
 console.log(problems ? `\n${problems} PROBLEM(S)` : '\nall good');

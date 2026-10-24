@@ -40,6 +40,12 @@
 
             <div id="levelGrid"></div>
 
+            <button class="card card-weak hidden" id="btnWeak">
+                <span class="card-icon">💪</span>
+                <span class="card-title" data-i18n="weakTitle"></span>
+                <span class="card-sub" id="weakSub"></span>
+            </button>
+
             <div class="or-divider"><span data-i18n="orHomework"></span></div>
 
             <div class="homework-card">
@@ -95,6 +101,8 @@
                 <h2 id="endTitle"></h2>
                 <p id="endScore"></p>
                 <p id="endBest" class="end-best"></p>
+
+                <button id="btnPracticeMissed" class="btn-practice hidden"></button>
 
                 <div class="end-buttons">
                     <button id="btnRetry" class="btn-primary" data-i18n="playAgain"></button>
