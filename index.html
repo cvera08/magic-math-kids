@@ -46,6 +46,9 @@
                 <span class="card-sub" id="weakSub"></span>
             </button>
 
+            <h2 class="path-title" data-i18n="pathTitle"></h2>
+            <div class="path" id="levelPath"></div>
+
             <div class="or-divider"><span data-i18n="orHomework"></span></div>
 
             <div class="homework-card">
@@ -56,7 +59,10 @@
                 <button id="btnHomework" class="btn-primary btn-wide" data-i18n="homeworkGo"></button>
             </div>
 
-            <button id="btnViewScores" class="link-btn" data-i18n="viewScores"></button>
+            <div class="home-links">
+                <button id="btnAlbum" class="btn-secondary"></button>
+                <button id="btnViewScores" class="link-btn" data-i18n="viewScores"></button>
+            </div>
 
         </section>
 
@@ -101,6 +107,7 @@
                 <h2 id="endTitle"></h2>
                 <p id="endScore"></p>
                 <p id="endBest" class="end-best"></p>
+                <div id="endSticker" class="end-sticker hidden"></div>
 
                 <button id="btnPracticeMissed" class="btn-practice hidden"></button>
 
@@ -125,6 +132,17 @@
         <p class="modal-hint" data-i18n="scoresHint"></p>
         <div class="scores-list" id="scoresList"></div>
         <button id="btnResetScores" class="link-btn" data-i18n="resetScores"></button>
+    </div>
+</div>
+
+<div class="modal-backdrop hidden" id="albumBackdrop">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2 data-i18n="albumTitle"></h2>
+            <button class="modal-close" id="btnCloseAlbum">✕</button>
+        </div>
+        <p class="modal-hint" id="albumHint"></p>
+        <div class="album-grid" id="albumGrid"></div>
     </div>
 </div>
 

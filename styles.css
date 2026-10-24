@@ -497,12 +497,6 @@ textarea{
     color: var(--muted);
 }
 
-.level-grid{
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-}
-
 .or-divider{
     display: flex;
     align-items: center;
@@ -1169,4 +1163,214 @@ textarea{
 
 .btn-practice:active{
     transform: scale(.98);
+}
+
+/* ---------------- road to the castle ---------------- */
+
+.path-title{
+    margin: 22px 0 6px;
+    text-align: center;
+    color: var(--purple);
+    font-size: 19px;
+}
+
+.path{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 6px 0;
+}
+
+/* the dotted road behind the stops */
+.path::before{
+    content: '';
+    position: absolute;
+    top: 30px;
+    bottom: 60px;
+    left: 50%;
+    border-left: 4px dotted #e6cde6;
+    transform: translateX(-50%);
+}
+
+.stop{
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 72%;
+    border: none;
+    background: none;
+    padding: 4px;
+    text-align: left;
+}
+
+.stop-left{ align-self: flex-start; }
+
+.stop-right{
+    align-self: flex-end;
+    flex-direction: row-reverse;
+    text-align: right;
+}
+
+.stop-bubble{
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+    background: white;
+    border: 3px solid var(--border);
+    box-shadow: 0 3px 0 var(--border);
+}
+
+.stop-done .stop-bubble{
+    border-color: #ffc94d;
+    background: #fff8e1;
+    box-shadow: 0 3px 0 #f2d48a;
+}
+
+.stop-next .stop-bubble{
+    border-color: var(--pink);
+    animation: glow 1.8s infinite;
+}
+
+@keyframes glow{
+    0%   { box-shadow: 0 0 0 0 rgba(255,111,181,.45); }
+    70%  { box-shadow: 0 0 0 14px rgba(255,111,181,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,111,181,0); }
+}
+
+.stop:active .stop-bubble{
+    transform: scale(.94);
+}
+
+.stop-text{
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: rgba(255,250,252,.92);
+    border-radius: 10px;
+    padding: 2px 4px;
+}
+
+.stop-name{
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.stop-sub{
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.stop-stars{
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+
+.stop-here{
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--pink);
+}
+
+.castle{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+    text-align: center;
+}
+
+.castle-icon{
+    font-size: 56px;
+    filter: grayscale(.85);
+    opacity: .6;
+}
+
+.castle-reached .castle-icon{
+    filter: none;
+    opacity: 1;
+    animation: pop-in .6s ease;
+}
+
+.castle-text{
+    font-size: 13px;
+    color: var(--muted);
+    max-width: 240px;
+}
+
+.castle-reached .castle-text{
+    font-size: 17px;
+    font-weight: bold;
+    color: var(--pink);
+}
+
+/* ---------------- stickers ---------------- */
+
+.home-links{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 22px;
+}
+
+.home-links .link-btn{
+    margin-top: 8px;
+}
+
+.end-sticker{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 10px auto 0;
+    padding: 10px 16px;
+    background: var(--purple-soft);
+    border-radius: 18px;
+    font-weight: bold;
+    color: #6a45b8;
+    max-width: 320px;
+}
+
+.end-sticker-icon{
+    font-size: 44px;
+    animation: sticker-in .7s cubic-bezier(.2, 1.6, .4, 1);
+}
+
+@keyframes sticker-in{
+    from{ transform: scale(0) rotate(-30deg); }
+    to{ transform: scale(1) rotate(0deg); }
+}
+
+.album-grid{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.album-slot{
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    font-size: 36px;
+}
+
+.album-owned{
+    background: var(--pink-soft);
+}
+
+.album-empty{
+    border: 2px dashed var(--border);
+    color: #d9c9d9;
+    font-size: 22px;
+    font-weight: bold;
 }

@@ -18,7 +18,7 @@ const CONTENT = (() => {
         { id: 'sum20', icon: '🦋', gen: 'sum20', name: { es: 'Sumas hasta 20', en: 'Sums to 20' }, sub: { es: '8 + 7', en: '8 + 7' } },
         { id: 'sub20', icon: '🐠', gen: 'sub20', name: { es: 'Restas hasta 20', en: 'Take away to 20' }, sub: { es: '20 − 7', en: '20 − 7' } },
         { id: 'tens',  icon: '🧱', gen: 'tens',  name: { es: 'Decenas', en: 'Tens' }, sub: { es: '30 + 20', en: '30 + 20' } },
-        { id: 'big',   icon: '🏰', gen: 'big',   name: { es: 'Cuentas grandes', en: 'Big sums' }, sub: { es: '15 + 13', en: '15 + 13' }, vertical: true },
+        { id: 'big',   icon: '🦄', gen: 'big',   name: { es: 'Cuentas grandes', en: 'Big sums' }, sub: { es: '15 + 13', en: '15 + 13' }, vertical: true },
         { id: 'mul',   icon: '🍬', gen: 'mul',   name: { es: 'Caramelos para todos', en: 'Sweets for everyone' }, sub: { es: '4 × 2', en: '4 × 2' },
           types: ['story', 'story', 'story', 'keypad', 'choose', 'missing', 'truefalse', 'sequence'] },
         { id: 'div',   icon: '🍭', gen: 'div',   name: { es: 'Repartir caramelos', en: 'Share the sweets' }, sub: { es: '8 ÷ 2', en: '8 ÷ 2' },
@@ -71,6 +71,15 @@ const CONTENT = (() => {
         },
     };
 
+    /* the album: a round with two or three stars earns the next one, at
+       random, until the album is full. Her favourites as of 2026: purple,
+       pink, princesses, castles, flowers, animals, bugs, fish, dolls. */
+    const STICKERS = [
+        '👑', '🦄', '🌷', '🌻', '🐞', '🦋', '🐠', '🐬',
+        '🐢', '🐱', '🐶', '🐰', '🧸', '🎀', '💎', '🌈',
+        '⭐', '🍓', '🧁', '🍭', '👸', '🐝', '🌸', '🪅',
+    ];
+
     const COUNTS = [6, 10, 15];
     const DEFAULT_COUNT = 10;
 
@@ -79,5 +88,5 @@ const CONTENT = (() => {
         return LEVELS.find(l => l.id === id) || null;
     }
 
-    return { VERSION, LEVELS, MIX, COUNTS, DEFAULT_COUNT, STORY_HOLDERS, STORY_ITEMS, STORIES, levelById };
+    return { VERSION, LEVELS, MIX, COUNTS, DEFAULT_COUNT, STORY_HOLDERS, STORY_ITEMS, STORIES, STICKERS, levelById };
 })();

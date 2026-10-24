@@ -9,7 +9,8 @@
 const UI = (() => {
 
     const MAX_DIGITS = 3;
-    const WEAK_MIN = 3;           // the "tricky ones" card needs a few to be worth it
+    const WEAK_MIN = 3;
+    const STICKER_MIN_ROUND = 6;  // a two-sum practice round doesn't earn a sticker           // the "tricky ones" card needs a few to be worth it
     const MAX_TRIES = 3;          // after the third miss we show the answer
     const NEXT_DELAY = 900;       // pause on a right answer before moving on
     const REVEAL_DELAY = 2200;    // longer, so she can read the answer
@@ -76,10 +77,47 @@ const UI = (() => {
         </button>`;
     }
 
+    /* the levels as a winding road that ends at a castle. Nothing is
+       locked — she can tap any stop — the glow only suggests the next one
+       (the first without two stars). */
+    const PATH_STARS = 2;
+
+    function paintPath(){
+        const bests = CONTENT.LEVELS.map(l => STORAGE.getBest(l.id));
+        const nextIndex = bests.findIndex(b => !b || b.stars < PATH_STARS);
+
+        const stops = CONTENT.LEVELS.map((level, i) => {
+            const best = bests[i];
+            const done = best && best.stars >= PATH_STARS;
+            const classes = ['stop', i % 2 ? 'stop-right' : 'stop-left'];
+            if(done) classes.push('stop-done');
+            if(i === nextIndex) classes.push('stop-next');
+            return `<button class="${classes.join(' ')}" data-level="${level.id}">
+                <span class="stop-bubble">${level.icon}</span>
+                <span class="stop-text">
+                    <span class="stop-name">${name(level.name)}</span>
+                    <span class="stop-sub">${name(level.sub)}</span>
+                    <span class="stop-stars">${best ? renderStars(best.stars) : ''}</span>
+                    ${i === nextIndex ? `<span class="stop-here">${I18N.t('pathHere')}</span>` : ''}
+                </span>
+            </button>`;
+        }).join('');
+
+        const reached = nextIndex === -1;
+        const castle = `<div class="castle ${reached ? 'castle-reached' : ''}">
+            <span class="castle-icon">🏰</span>
+            <span class="castle-text">${I18N.t(reached ? 'castle' : 'castleLocked')}</span>
+        </div>`;
+
+        els.levelPath.innerHTML = stops + castle;
+    }
+
     function paintHome(){
-        els.levelGrid.innerHTML =
-            levelCard(CONTENT.MIX, 'card-featured') +
-            `<div class="level-grid">${CONTENT.LEVELS.map(l => levelCard(l)).join('')}</div>`;
+        els.levelGrid.innerHTML = levelCard(CONTENT.MIX, 'card-featured');
+        paintPath();
+
+        const owned = STORAGE.getStickers().length;
+        els.btnAlbum.textContent = I18N.t('album', { n: owned, total: CONTENT.STICKERS.length });
 
         const weak = STORAGE.weakFacts();
         els.btnWeak.classList.toggle('hidden', weak.length < WEAK_MIN);
@@ -88,6 +126,41 @@ const UI = (() => {
         els.countOptions.innerHTML = CONTENT.COUNTS.map(n =>
             `<button data-count="${n}" class="${n === state.count ? 'selected' : ''}">${n}</button>`
         ).join('');
+    }
+
+    /* ---------------- sticker album ---------------- */
+
+    function paintAlbum(){
+        const owned = STORAGE.getStickers();
+        const total = CONTENT.STICKERS.length;
+        els.albumHint.textContent = owned.length >= total
+            ? I18N.t('albumFull')
+            : I18N.t('albumHint', { n: owned.length, total });
+        els.albumGrid.innerHTML = CONTENT.STICKERS.map(sticker =>
+            owned.includes(sticker)
+                ? `<span class="album-slot album-owned">${sticker}</span>`
+                : `<span class="album-slot album-empty">?</span>`
+        ).join('');
+    }
+
+    function openAlbum(){
+        paintAlbum();
+        els.albumBackdrop.classList.remove('hidden');
+    }
+
+    function closeAlbum(){
+        els.albumBackdrop.classList.add('hidden');
+    }
+
+    /* two or three stars earn the next sticker she doesn't have yet */
+    function awardSticker(stars){
+        if(stars < 2) return null;
+        const owned = STORAGE.getStickers();
+        const left = CONTENT.STICKERS.filter(s => !owned.includes(s));
+        if(!left.length) return null;
+        const sticker = left[Math.floor(Math.random() * left.length)];
+        STORAGE.addSticker(sticker);
+        return sticker;
     }
 
     /* ---------------- scores ---------------- */
@@ -148,6 +221,7 @@ const UI = (() => {
         }
         if(!$('screen-end').classList.contains('hidden')) paintEnd();
         if(!els.scoresBackdrop.classList.contains('hidden')) paintScores();
+        if(!els.albumBackdrop.classList.contains('hidden')) paintAlbum();
     }
 
     function setLanguage(lang){
@@ -540,6 +614,10 @@ const UI = (() => {
         els.endStars.innerHTML = renderStars(r.stars);
         els.endTitle.textContent = I18N.tAt('endTitles', r.stars);
         els.endScore.textContent = I18N.t('endScore', { correct: r.correct, total: r.total });
+        els.endSticker.classList.toggle('hidden', !r.sticker);
+        if(r.sticker){
+            els.endSticker.innerHTML = `<span class="end-sticker-icon">${r.sticker}</span><span>${I18N.t('newSticker')}</span>`;
+        }
         els.btnPracticeMissed.classList.toggle('hidden', !state.missed.length);
         els.btnPracticeMissed.textContent = I18N.t('practiceMissed', { n: state.missed.length });
         if(r.isNewBest) els.endBest.textContent = I18N.t('newBest');
@@ -552,7 +630,7 @@ const UI = (() => {
         const stars = ENGINE.starsFor(state.firstTry, total);
         const levelId = state.source.kind === 'level' ? state.source.levelId : null;
 
-        state.result = { stars, correct: state.firstTry, total, isNewBest: false, best: null };
+        state.result = { stars, correct: state.firstTry, total, isNewBest: false, best: null, sticker: total >= STICKER_MIN_ROUND ? awardSticker(stars) : null };
         if(levelId){
             state.result.isNewBest = STORAGE.saveBest(levelId, stars, state.firstTry, total);
             state.result.best = STORAGE.getBest(levelId);
@@ -604,6 +682,12 @@ const UI = (() => {
         els.btnResetScores = $('btnResetScores');
         els.endTitle = $('endTitle');
         els.btnWeak = $('btnWeak');
+        els.levelPath = $('levelPath');
+        els.btnAlbum = $('btnAlbum');
+        els.albumBackdrop = $('albumBackdrop');
+        els.albumGrid = $('albumGrid');
+        els.albumHint = $('albumHint');
+        els.endSticker = $('endSticker');
         els.weakSub = $('weakSub');
         els.btnPracticeMissed = $('btnPracticeMissed');
         els.endScore = $('endScore');
@@ -677,6 +761,15 @@ const UI = (() => {
         els.btnBack.addEventListener('click', goHome);
         $('btnMenu').addEventListener('click', goHome);
         $('btnViewScores').addEventListener('click', openScores);
+        els.btnAlbum.addEventListener('click', openAlbum);
+        $('btnCloseAlbum').addEventListener('click', closeAlbum);
+        els.albumBackdrop.addEventListener('click', (e) => {
+            if(e.target === els.albumBackdrop) closeAlbum();
+        });
+        els.levelPath.addEventListener('click', (e) => {
+            const stop = e.target.closest('[data-level]');
+            if(stop) start({ kind: 'level', levelId: stop.dataset.level });
+        });
         els.btnWeak.addEventListener('click', () => start({ kind: 'weak' }));
         // the review never touches the best score: it is extra practice
         els.btnPracticeMissed.addEventListener('click', () => start({ kind: 'review', facts: [...state.missed] }));

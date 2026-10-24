@@ -88,6 +88,22 @@ const STORAGE = (() => {
             .map(key => all[key]);
     }
 
+    /* ---------- sticker album ---------- */
+
+    const STICKERS_KEY = 'math-ldk-stickers';
+
+    function getStickers(){
+        return read(STICKERS_KEY, []);
+    }
+
+    function addSticker(sticker){
+        const owned = getStickers();
+        if(!owned.includes(sticker)){
+            owned.push(sticker);
+            write(STICKERS_KEY, owned);
+        }
+    }
+
     function resetScores(){
         try{
             localStorage.removeItem(BEST_KEY);
@@ -97,5 +113,5 @@ const STORAGE = (() => {
         }
     }
 
-    return { read, write, getSetting, setSetting, getBest, saveBest, resetScores, recordFact, weakFacts };
+    return { read, write, getSetting, setSetting, getBest, saveBest, resetScores, recordFact, weakFacts, getStickers, addSticker };
 })();
