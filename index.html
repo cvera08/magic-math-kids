@@ -24,7 +24,7 @@
 
     <header class="topbar">
         <button id="btnBack" class="btn-back hidden" data-i18n="menu"></button>
-        <h1 class="brand" data-i18n="brand"></h1>
+        <h1 class="brand" id="brand"></h1>
         <div class="lang-toggle" id="langToggle">
             <button data-lang="es">ES</button>
             <button data-lang="en">EN</button>
@@ -80,8 +80,14 @@
         <section id="screen-quiz" class="screen hidden">
 
             <div class="quiz-progress">
-                <div class="quiz-progress-text" id="quizProgressText"></div>
-                <div class="progress-bar"><div class="progress-fill" id="quizProgressFill"></div></div>
+                <div class="quiz-progress-text">
+                    <span id="quizProgressText"></span>
+                    <span class="streak hidden" id="streak"></span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-bar"><div class="progress-fill" id="quizProgressFill"></div></div>
+                    <span class="progress-runner" id="progressRunner">🦄</span>
+                </div>
             </div>
 
             <div class="quiz-card">

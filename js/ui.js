@@ -31,15 +31,25 @@ const UI = (() => {
 
     /* ---------------- screens ---------------- */
 
+    let screen = 'home';
+
     function show(name){
+        screen = name;
         ['home', 'quiz', 'end'].forEach(s => $('screen-' + s).classList.toggle('hidden', s !== name));
         els.btnBack.classList.toggle('hidden', name === 'home');
+        paintBrand();
         window.scrollTo(0, 0);
     }
 
     /* ---------------- copy ---------------- */
 
+    /* the long name doesn't fit next to the Menu button on a small phone */
+    function paintBrand(){
+        els.brand.textContent = I18N.t(screen === 'home' ? 'brand' : 'brandShort');
+    }
+
     function paintStatic(){
+        paintBrand();
         document.documentElement.lang = I18N.getLang();
         document.title = I18N.t('pageTitle');
         document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -213,7 +223,8 @@ const UI = (() => {
         paintHome();
         paintWarnings();
         if(!$('screen-quiz').classList.contains('hidden') && current()){
-            paintProgress();
+            els.progressText.textContent = I18N.t('progress', { n: state.index + 1, total: state.questions.length });
+            paintStreak();
             paintInstruction(current());
             const story = els.prompt.querySelector('.story-text');
             if(story) story.textContent = storyText(current());
@@ -270,6 +281,7 @@ const UI = (() => {
         state.questions = buildQuestions(source);
         state.index = 0;
         state.firstTry = 0;
+        state.streak = 0;
         state.missed = [];
         CONFETTI.clear(els.confetti);
         show('quiz');
@@ -283,7 +295,24 @@ const UI = (() => {
     function paintProgress(){
         const total = state.questions.length;
         els.progressText.textContent = I18N.t('progress', { n: state.index + 1, total });
-        els.progressFill.style.width = (state.index / total * 100) + '%';
+        setProgress(state.index / total);
+        paintStreak();
+    }
+
+    function setProgress(ratio){
+        const percent = Math.round(ratio * 100);
+        els.progressFill.style.width = percent + '%';
+        els.runner.style.left = `calc(${percent}% - ${percent / 100 * 26}px)`;
+    }
+
+    /* right on the first try, several in a row: a small flame, never a
+       penalty — a miss just quietly resets it */
+    const STREAK_SHOW = 3;
+
+    function paintStreak(){
+        const show = state.streak >= STREAK_SHOW;
+        els.streak.classList.toggle('hidden', !show);
+        if(show) els.streak.textContent = I18N.t('streak', { n: state.streak });
     }
 
     function paintInstruction(q){
@@ -467,6 +496,13 @@ const UI = (() => {
         els.feedback.className = 'quiz-feedback ' + (feedback ? feedback.className : '');
     }
 
+    function bump(el){
+        if(!el) return;
+        el.classList.remove('bump');
+        void el.offsetWidth;
+        el.classList.add('bump');
+    }
+
     function shake(el){
         if(!el) return;
         el.classList.remove('wrong');
@@ -477,6 +513,9 @@ const UI = (() => {
     function onRight(q){
         state.locked = true;
         if(state.tries === 0) state.firstTry++;
+        state.streak = state.tries === 0 ? state.streak + 1 : 0;
+        paintStreak();
+        if(state.tries === 0 && state.streak >= STREAK_SHOW) bump(els.streak);
         STORAGE.recordFact(q.fact, state.tries === 0);
         if(state.tries > 0 && q.fact.op) state.missed.push(q.fact);
         const box = $('answerBox');
@@ -484,6 +523,7 @@ const UI = (() => {
             state.typed = String(q.answer);
             paintTyped();
             box.classList.add('right');
+            bump(box);
         }
         // a wrong claim gets corrected on screen: 5 + 3 = ~~9~~ 8
         const claim = els.prompt.querySelector('.claim-box');
@@ -508,6 +548,9 @@ const UI = (() => {
 
         const left = (q.options || []).filter(o => !o.isCorrect).length;
         const outOfTries = q.options ? state.tries >= left : state.tries >= MAX_TRIES;
+
+        state.streak = 0;
+        paintStreak();
 
         if(outOfTries && !q.options){
             state.locked = true;
@@ -636,7 +679,7 @@ const UI = (() => {
             state.result.best = STORAGE.getBest(levelId);
         }
 
-        els.progressFill.style.width = '100%';
+        setProgress(1);
         els.keypad.classList.add('hidden');
         paintEnd();
         show('end');
@@ -661,6 +704,9 @@ const UI = (() => {
 
     function init(){
         els.btnBack = $('btnBack');
+        els.brand = $('brand');
+        els.streak = $('streak');
+        els.runner = $('progressRunner');
         els.langToggle = $('langToggle');
         els.levelGrid = $('levelGrid');
         els.countOptions = $('countOptions');

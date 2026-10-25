@@ -10,6 +10,8 @@ const I18N = (() => {
         es: {
             pageTitle: 'Matemáticas LDK',
             brand: '💖 Matemáticas LDK',
+            brandShort: '💖 Mate LDK',
+            streak: '🔥 {n} seguidas',
             tagline: 'Aprendamos jugando 🌟',
             menu: '← Menú',
 
@@ -82,6 +84,8 @@ const I18N = (() => {
         en: {
             pageTitle: 'Math LDK',
             brand: '💖 Math LDK',
+            brandShort: '💖 Math LDK',
+            streak: '🔥 {n} in a row',
             tagline: 'Learning through play 🌟',
             menu: '← Menu',
 
