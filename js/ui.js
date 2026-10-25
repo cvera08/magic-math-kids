@@ -780,6 +780,7 @@ const UI = (() => {
         });
         $('btnRetry').addEventListener('click', () => start(state.source));
 
+        $('appVersion').textContent = 'v' + CONTENT.VERSION;
         paintStatic();
         paintHome();
         paintToggles();

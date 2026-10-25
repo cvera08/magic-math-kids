@@ -1374,3 +1374,10 @@ textarea{
     font-size: 22px;
     font-weight: bold;
 }
+
+.app-version{
+    text-align: center;
+    font-size: 11px;
+    color: #b9aebb;
+    margin: 6px 0 0;
+}

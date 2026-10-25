@@ -1,0 +1,13 @@
+{
+  "name": "Matemáticas LDK",
+  "short_name": "Mate LDK",
+  "description": "Sumas, restas y caramelos para repartir: matemática de primero, jugando.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#fffafc",
+  "theme_color": "#ff6fb5",
+  "icons": [
+    { "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
