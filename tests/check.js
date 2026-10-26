@@ -6,12 +6,12 @@ const vm = require('vm');
 const path = require('path');
 
 const root = process.argv[2] || path.join(__dirname, '..');
-const files = ['js/content.js', 'js/engine.js'];
+const files = ['js/i18n.js', 'js/content.js', 'js/engine.js'];
 const code = files.map(f => fs.readFileSync(path.join(root, f), 'utf8')).join('\n;\n')
-    + '\n;globalThis.__x = { CONTENT, ENGINE };';
+    + '\n;globalThis.__x = { I18N, CONTENT, ENGINE };';
 const ctx = vm.createContext({ console });
 vm.runInContext(code, ctx);
-const { CONTENT, ENGINE } = ctx.__x;
+const { I18N, CONTENT, ENGINE } = ctx.__x;
 
 let problems = 0;
 const fail = (m) => { problems++; console.log('  ✗', m); };
@@ -116,6 +116,22 @@ for(let i = 0; i < 200; i++){
     }
 }
 console.log('review ok');
+
+/* ---------- both languages say everything ---------- */
+const es = Object.keys(I18N.STRINGS.es).sort();
+const en = Object.keys(I18N.STRINGS.en).sort();
+eq(en, es, 'i18n keys match');
+for(const type of Object.keys(typeCount)){
+    if(!I18N.STRINGS.es['instr_' + type] || !I18N.STRINGS.en['instr_' + type]) fail(`no instruction for question type ${type}`);
+}
+for(const level of [...CONTENT.LEVELS, CONTENT.MIX]){
+    if(!level.name.es || !level.name.en || !level.sub.es || !level.sub.en) fail(`${level.id}: missing a name`);
+}
+for(const op of ['+', '-', '*', '/']){
+    if(!CONTENT.STORIES[op].es || !CONTENT.STORIES[op].en) fail(`story ${op}: missing a language`);
+}
+if(new Set(CONTENT.STICKERS).size !== CONTENT.STICKERS.length) fail('duplicate sticker');
+console.log('copy ok');
 
 console.log('question types seen:', typeCount);
 if(tfAll && (tfTrue / tfAll < 0.4 || tfTrue / tfAll > 0.6)) fail(`true/false is lopsided: ${tfTrue}/${tfAll} true`);
