@@ -10,7 +10,7 @@
 
 const CONTENT = (() => {
 
-    const VERSION = '2.0';
+    const VERSION = '4.0.0';
 
     const LEVELS = [
         { id: 'sum10', icon: '🌸', gen: 'sum10', name: { es: 'Sumas hasta 10', en: 'Sums to 10' }, sub: { es: '3 + 4', en: '3 + 4' } },
